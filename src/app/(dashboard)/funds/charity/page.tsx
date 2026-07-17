@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
@@ -21,15 +22,17 @@ export default function CharityPage() {
   const { funds } = useFunds(user?.uid ?? null);
   const { donations, totalDonated, loading } = useDonations(user?.uid ?? null);
   const { currency } = useUserSettings();
+  const t = useTranslations('charity');
+  const tfund = useTranslations('funds');
 
   const charityFund = funds?.charity;
 
   async function handleDelete(donation: Donation) {
     const result = await reverseDonation({ donationId: donation.id });
     if (result.success) {
-      toast.success(`Returned ${formatCurrency(donation.amount, currency)} to the charity fund`);
+      toast.success(t('returnedToast', { amount: formatCurrency(donation.amount, currency) }));
     } else {
-      toast.error(result.error ?? 'Could not delete the donation');
+      toast.error(result.error ?? t('deleteFailedToast'));
     }
   }
 
@@ -40,15 +43,15 @@ export default function CharityPage() {
           <HandHeart className="h-6 w-6 text-amber-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Charity Fund</h1>
-          <p className="text-muted-foreground text-sm">Giving & charitable contributions (1%)</p>
+          <h1 className="text-2xl font-bold">{t('fundTitle')}</h1>
+          <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Balance</p>
+            <p className="text-xs text-muted-foreground">{tfund('balance')}</p>
             {charityFund ? (
               <p className="text-xl font-bold text-amber-400">
                 {formatCurrency(charityFund.balance, currency)}
@@ -58,7 +61,7 @@ export default function CharityPage() {
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Total Received</p>
+            <p className="text-xs text-muted-foreground">{tfund('totalReceived')}</p>
             {charityFund ? (
               <p className="text-xl font-bold text-emerald-400">
                 {formatCurrency(charityFund.totalReceived, currency)}
@@ -68,7 +71,7 @@ export default function CharityPage() {
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Total Donated</p>
+            <p className="text-xs text-muted-foreground">{t('totalDonated')}</p>
             <p className="text-xl font-bold text-rose-400">{formatCurrency(totalDonated, currency)}</p>
           </CardContent>
         </Card>
@@ -79,7 +82,7 @@ export default function CharityPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Donation History</CardTitle>
+            <CardTitle className="text-base">{t('history')}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -91,7 +94,7 @@ export default function CharityPage() {
             ) : donations.length === 0 ? (
               <div className="text-center py-10">
                 <HandHeart className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No donations recorded yet</p>
+                <p className="text-sm text-muted-foreground">{t('noDonations')}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -114,14 +117,14 @@ export default function CharityPage() {
                             variant="ghost"
                             size="icon-sm"
                             className="text-muted-foreground hover:text-destructive"
-                            aria-label="Delete donation"
+                            aria-label={t('deleteConfirm')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         }
-                        title="Delete this donation?"
-                        description={`This returns ${formatCurrency(donation.amount, currency)} to the charity fund. The ledger keeps a record of both the donation and the reversal.`}
-                        confirmLabel="Delete donation"
+                        title={t('deleteTitle')}
+                        description={t('deleteDesc', { amount: formatCurrency(donation.amount, currency) })}
+                        confirmLabel={t('deleteConfirm')}
                         destructive
                         onConfirm={() => handleDelete(donation)}
                       />

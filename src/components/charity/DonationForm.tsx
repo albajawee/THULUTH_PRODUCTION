@@ -2,6 +2,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { addDonationSchema, AddDonationInput } from '@/lib/utils/validators';
 import { recordDonation } from '@/lib/services/charity.service';
@@ -20,6 +21,8 @@ interface DonationFormProps {
 
 export function DonationForm({ onSuccess }: DonationFormProps) {
   const { user } = useAuth();
+  const t = useTranslations('charity');
+  const tc = useTranslations('common');
 
   const {
     register,
@@ -33,14 +36,14 @@ export function DonationForm({ onSuccess }: DonationFormProps) {
   });
 
   async function onSubmit(data: AddDonationInput) {
-    if (!user) { toast.error('Not authenticated'); return; }
+    if (!user) { toast.error(tc('notAuthenticated')); return; }
     const result = await recordDonation(data);
     if (result.success) {
-      toast.success('Donation recorded');
+      toast.success(t('recordedToast'));
       reset({ date: toInputDate() });
       onSuccess?.();
     } else {
-      const err = result.error?.amount?.[0] ?? 'Failed to record donation';
+      const err = result.error?.amount?.[0] ?? t('recordFailedToast');
       toast.error(err);
     }
   }
@@ -48,22 +51,22 @@ export function DonationForm({ onSuccess }: DonationFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Record Donation</CardTitle>
+        <CardTitle className="text-base">{t('recordDonation')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="recipient">Recipient</Label>
+            <Label htmlFor="recipient">{t('recipient')}</Label>
             <Input
               id="recipient"
-              placeholder="Who received this donation?"
+              placeholder={t('recipientPlaceholder')}
               {...register('recipient')}
             />
             {errors.recipient && <p className="text-sm text-destructive">{errors.recipient.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{tc('amount')}</Label>
             <Controller
               control={control}
               name="amount"
@@ -81,23 +84,23 @@ export function DonationForm({ onSuccess }: DonationFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tc('description')}</Label>
             <Textarea
               id="description"
               rows={2}
-              placeholder="Purpose of this donation"
+              placeholder={t('descriptionPlaceholder')}
               {...register('description')}
             />
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{tc('date')}</Label>
             <Input id="date" type="date" {...register('date')} />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Recording...' : 'Record Donation'}
+            {isSubmitting ? t('recording') : t('recordDonation')}
           </Button>
         </form>
       </CardContent>

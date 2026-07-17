@@ -182,6 +182,25 @@
     "totalSavings": "Total Savings",
     "totalCharity": "Total Charity"
   },
+  "charity": {
+    "fundTitle": "Charity Fund",
+    "subtitle": "Giving & charitable contributions (1%)",
+    "totalDonated": "Total Donated",
+    "recordDonation": "Record Donation",
+    "recipient": "Recipient",
+    "recipientPlaceholder": "Who received this donation?",
+    "descriptionPlaceholder": "Purpose of this donation",
+    "recording": "Recording...",
+    "recordedToast": "Donation recorded",
+    "recordFailedToast": "Failed to record donation",
+    "history": "Donation History",
+    "noDonations": "No donations recorded yet",
+    "deleteTitle": "Delete this donation?",
+    "deleteDesc": "This returns {amount} to the charity fund. The ledger keeps a record of both the donation and the reversal.",
+    "deleteConfirm": "Delete donation",
+    "returnedToast": "Returned {amount} to the charity fund",
+    "deleteFailedToast": "Could not delete the donation"
+  },
   "auth": {
     "login": "Sign In",
     "register": "Create Account",

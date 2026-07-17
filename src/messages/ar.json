@@ -182,6 +182,25 @@
     "totalSavings": "إجمالي المدخرات",
     "totalCharity": "إجمالي الصدقات"
   },
+  "charity": {
+    "fundTitle": "صندوق الصدقة",
+    "subtitle": "العطاء والمساهمات الخيرية (1%)",
+    "totalDonated": "إجمالي التبرعات",
+    "recordDonation": "تسجيل تبرع",
+    "recipient": "المستفيد",
+    "recipientPlaceholder": "من الذي تلقّى هذا التبرع؟",
+    "descriptionPlaceholder": "الغرض من هذا التبرع",
+    "recording": "جاري التسجيل...",
+    "recordedToast": "تم تسجيل التبرع",
+    "recordFailedToast": "فشل تسجيل التبرع",
+    "history": "سجل التبرعات",
+    "noDonations": "لم يتم تسجيل تبرعات بعد",
+    "deleteTitle": "حذف هذا التبرع؟",
+    "deleteDesc": "سيعيد هذا {amount} إلى صندوق الصدقة. يحتفظ الدفتر بقيد للتبرع وللعكس معًا.",
+    "deleteConfirm": "حذف التبرع",
+    "returnedToast": "تمت إعادة {amount} إلى صندوق الصدقة",
+    "deleteFailedToast": "تعذّر حذف التبرع"
+  },
   "auth": {
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
