@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useIncome } from '@/lib/hooks/useIncome';
@@ -22,15 +23,17 @@ export default function IncomePage() {
   const { user } = useAuth();
   const { incomes, loading } = useIncome(user?.uid ?? null);
   const { currency } = useUserSettings();
+  const t = useTranslations('income');
+  const tf = useTranslations('nav');
 
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
 
   async function handleDelete(income: Income) {
     const result = await reverseIncome({ incomeId: income.id });
     if (result.success) {
-      toast.success('Income entry removed');
+      toast.success(t('incomeRemoved'));
     } else {
-      toast.error(result.error ?? 'Could not remove the income');
+      toast.error(result.error ?? t('incomeRemoveFailed'));
     }
   }
 
@@ -38,20 +41,20 @@ export default function IncomePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Income</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <p className="text-muted-foreground text-sm">
-            Total: {formatCurrency(totalIncome, currency)}
+            {t('total')}: {formatCurrency(totalIncome, currency)}
           </p>
         </div>
         <Link href="/income/add" className={buttonVariants()}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Income
+          {t('addIncome')}
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Income History</CardTitle>
+          <CardTitle className="text-base">{t('history')}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -63,8 +66,8 @@ export default function IncomePage() {
           ) : incomes.length === 0 ? (
             <div className="text-center py-12">
               <Wallet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No income recorded yet</p>
-              <Link href="/income/add" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Add your first income</Link>
+              <p className="text-muted-foreground">{t('noIncome')}</p>
+              <Link href="/income/add" className={buttonVariants({ variant: 'outline', size: 'sm' })}>{t('addFirst')}</Link>
             </div>
           ) : (
             <div className="space-y-3">
@@ -80,14 +83,14 @@ export default function IncomePage() {
                             variant="ghost"
                             size="icon-sm"
                             className="ml-auto text-muted-foreground hover:text-destructive"
-                            aria-label="Delete income"
+                            aria-label={t('deleteIncome')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         }
-                        title="Delete this income?"
-                        description={`This removes ${formatCurrency(income.amount, currency)} and pulls each fund's share back out. It only works if none of it has been spent yet. The ledger records the reversal.`}
-                        confirmLabel="Delete income"
+                        title={t('deleteIncomeTitle')}
+                        description={t('deleteIncomeDesc', { amount: formatCurrency(income.amount, currency) })}
+                        confirmLabel={t('deleteIncome')}
                         destructive
                         onConfirm={() => handleDelete(income)}
                       />
@@ -101,7 +104,7 @@ export default function IncomePage() {
                         const config = FUND_CONFIG[fund];
                         return (
                           <span key={fund} className={cn('text-xs px-2 py-0.5 rounded-full border', config.bgColor, config.borderColor, config.color)}>
-                            {config.label}: {formatCurrency(income.distributions[fund], currency)}
+                            {tf(fund)}: {formatCurrency(income.distributions[fund], currency)}
                           </span>
                         );
                       })}

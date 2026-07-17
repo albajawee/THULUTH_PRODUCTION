@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { IncomeDistribution } from '@/lib/types';
 import { FUND_CONFIG, FUND_ORDER } from '@/lib/constants/fund-config';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -18,12 +19,14 @@ export function DistributionPreview({
   total,
   currency = 'SAR',
 }: DistributionPreviewProps) {
+  const t = useTranslations('income');
+  const tf = useTranslations('nav');
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Distribution Preview</CardTitle>
+        <CardTitle className="text-base">{t('distribution')}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Total: {formatCurrency(total, currency)}
+          {t('total')}: {formatCurrency(total, currency)}
         </p>
       </CardHeader>
       <CardContent>
@@ -49,7 +52,7 @@ export function DistributionPreview({
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{config.label}</span>
+                    <span className="text-sm font-medium">{tf(fundId)}</span>
                     <span className={cn('text-sm font-bold', config.color)}>
                       {config.percentage}%
                     </span>
@@ -68,7 +71,7 @@ export function DistributionPreview({
           })}
         </div>
         <div className="mt-4 pt-3 border-t border-border/50 flex justify-between text-sm">
-          <span className="text-muted-foreground">Distributed</span>
+          <span className="text-muted-foreground">{t('distributed')}</span>
           <span className="font-semibold">
             {formatCurrency(
               Object.values(distribution).reduce((a, b) => a + b, 0),
