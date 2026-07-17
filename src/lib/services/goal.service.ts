@@ -103,3 +103,49 @@ export async function setGoalStatus(rawData: unknown) {
   revalidatePath(`/goals/${goalId}`);
   return { success: true };
 }
+
+const deleteGoalSchema = z.object({ goalId: z.string().min(1) });
+
+/**
+ * Deletes a goal outright. Safe to hard-delete because goals never held money — progress was only
+ * ever a view of the linked fund's balance, so there is nothing to reconcile. An audit entry keeps
+ * the record of what existed.
+ */
+export async function deleteGoal(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
+  const parsed = deleteGoalSchema.safeParse(rawData);
+  if (!parsed.success) {
+    return { success: false, error: 'Invalid request' };
+  }
+  const { goalId } = parsed.data;
+
+  const userRef = adminDb.collection('users').doc(userId);
+  const goalRef = userRef.collection('goals').doc(goalId);
+  const snap = await goalRef.get();
+  if (!snap.exists) {
+    return { success: false, error: 'Goal not found' };
+  }
+
+  const now = new Date().toISOString();
+  const before = snap.data() as Goal;
+
+  const batch = adminDb.batch();
+  batch.delete(goalRef);
+
+  const auditRef = userRef.collection('audit_logs').doc();
+  batch.set(auditRef, {
+    id: auditRef.id,
+    userId,
+    action: 'goal_deleted',
+    entityType: 'goal',
+    entityId: goalId,
+    before: { title: before.title, targetAmount: before.targetAmount, status: before.status },
+    createdAt: now,
+  });
+
+  await batch.commit();
+
+  revalidatePath('/goals');
+  return { success: true };
+}

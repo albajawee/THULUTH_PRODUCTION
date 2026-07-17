@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { CheckCircle2, RotateCcw } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Trash2 } from 'lucide-react';
 import { Goal } from '@/lib/types';
-import { setGoalStatus } from '@/lib/services/goal.service';
+import { setGoalStatus, deleteGoal } from '@/lib/services/goal.service';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 /**
  * Lifecycle actions for a goal. Goals move no money, so completing or reopening one is a pure
@@ -33,6 +34,17 @@ export function GoalActions({ goal }: { goal: Goal }) {
     }
   }
 
+  async function handleDelete() {
+    const result = await deleteGoal({ goalId: goal.id });
+    if (result.success) {
+      toast.success('Goal deleted');
+      router.push('/goals');
+      router.refresh();
+    } else {
+      toast.error(result.error ?? 'Could not delete the goal');
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       {goal.status === 'completed' ? (
@@ -46,6 +58,20 @@ export function GoalActions({ goal }: { goal: Goal }) {
           Mark as achieved
         </Button>
       )}
+
+      <ConfirmDialog
+        trigger={
+          <Button variant="ghost" className="text-destructive" disabled={pending}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </Button>
+        }
+        title="Delete this goal?"
+        description="This permanently removes the goal. Your funds and their balances are not affected — goals never held money."
+        confirmLabel="Delete goal"
+        destructive
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
