@@ -50,3 +50,14 @@ export const GROWTH_CATEGORIES: { value: GrowthCategory; label: string }[] = [
   { value: 'retirement', label: 'Retirement' },
   { value: 'other', label: 'Other' },
 ];
+
+/**
+ * Categories per fund. Charity has no category taxonomy of its own — giving is tracked as
+ * donations (see DonationForm), so a charity-fund expense is just "General".
+ */
+export const CATEGORIES_BY_FUND: Record<string, { value: string; label: string }[]> = {
+  stability: STABILITY_CATEGORIES,
+  life: LIFE_CATEGORIES,
+  growth: GROWTH_CATEGORIES,
+  charity: [{ value: 'other', label: 'General' }],
+};

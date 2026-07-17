@@ -8,7 +8,7 @@ import { addExpenseSchema, AddExpenseInput } from '@/lib/utils/validators';
 import { addExpense } from '@/lib/services/expense.service';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { FundType } from '@/lib/types';
-import { STABILITY_CATEGORIES, LIFE_CATEGORIES, GROWTH_CATEGORIES } from '@/lib/constants/fund-categories';
+import { CATEGORIES_BY_FUND } from '@/lib/constants/fund-categories';
 import { toInputDate } from '@/lib/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,13 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const CATEGORIES_BY_FUND: Record<string, { value: string; label: string }[]> = {
-  stability: STABILITY_CATEGORIES,
-  life: LIFE_CATEGORIES,
-  growth: GROWTH_CATEGORIES,
-  charity: [{ value: 'other', label: 'General' }],
-};
 
 interface ExpenseFormProps {
   fundType: FundType;
