@@ -1,14 +1,18 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useDonations } from '@/lib/hooks/useDonations';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { reverseDonation } from '@/lib/services/charity.service';
 import { DonationForm } from '@/components/charity/DonationForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { HandHeart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { HandHeart, Trash2 } from 'lucide-react';
+import { Donation } from '@/lib/types';
 
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 
@@ -19,6 +23,15 @@ export default function CharityPage() {
   const { currency } = useUserSettings();
 
   const charityFund = funds?.charity;
+
+  async function handleDelete(donation: Donation) {
+    const result = await reverseDonation({ donationId: donation.id });
+    if (result.success) {
+      toast.success(`Returned ${formatCurrency(donation.amount, currency)} to the charity fund`);
+    } else {
+      toast.error(result.error ?? 'Could not delete the donation');
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -91,9 +104,28 @@ export default function CharityPage() {
                       <p className="text-sm font-medium truncate">{donation.recipient}</p>
                       <p className="text-xs text-muted-foreground">{donation.description} · {formatDate(donation.date)}</p>
                     </div>
-                    <span className="text-sm font-semibold text-rose-400 ml-3 tabular-nums">
-                      -{formatCurrency(donation.amount, currency)}
-                    </span>
+                    <div className="flex items-center gap-1 ml-3 shrink-0">
+                      <span className="text-sm font-semibold text-rose-400 tabular-nums">
+                        -{formatCurrency(donation.amount, currency)}
+                      </span>
+                      <ConfirmDialog
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            aria-label="Delete donation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                        title="Delete this donation?"
+                        description={`This returns ${formatCurrency(donation.amount, currency)} to the charity fund. The ledger keeps a record of both the donation and the reversal.`}
+                        confirmLabel="Delete donation"
+                        destructive
+                        onConfirm={() => handleDelete(donation)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

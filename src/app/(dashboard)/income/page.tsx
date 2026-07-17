@@ -1,16 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useIncome } from '@/lib/hooks/useIncome';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { reverseIncome } from '@/lib/services/income.service';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Wallet } from 'lucide-react';
+import { Plus, Wallet, Trash2 } from 'lucide-react';
 import { FUND_CONFIG } from '@/lib/constants/fund-config';
-import { FundType } from '@/lib/types';
+import { FundType, Income } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
@@ -21,6 +24,15 @@ export default function IncomePage() {
   const { currency } = useUserSettings();
 
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+
+  async function handleDelete(income: Income) {
+    const result = await reverseIncome({ incomeId: income.id });
+    if (result.success) {
+      toast.success('Income entry removed');
+    } else {
+      toast.error(result.error ?? 'Could not remove the income');
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -62,6 +74,23 @@ export default function IncomePage() {
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{income.source}</p>
                       <Badge variant="outline" className="text-xs">{formatDate(income.date)}</Badge>
+                      <ConfirmDialog
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="ml-auto text-muted-foreground hover:text-destructive"
+                            aria-label="Delete income"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                        title="Delete this income?"
+                        description={`This removes ${formatCurrency(income.amount, currency)} and pulls each fund's share back out. It only works if none of it has been spent yet. The ledger records the reversal.`}
+                        confirmLabel="Delete income"
+                        destructive
+                        onConfirm={() => handleDelete(income)}
+                      />
                     </div>
                     <p className="text-2xl font-bold text-emerald-400">{formatCurrency(income.amount, currency)}</p>
                     {income.note && (
