@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useExpenses } from '@/lib/hooks/useExpenses';
@@ -24,6 +25,8 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
   const { funds } = useFunds(user?.uid ?? null);
   const { expenses, loading } = useExpenses(user?.uid ?? null, fundType);
   const { currency } = useUserSettings();
+  const t = useTranslations('funds');
+  const tf = useTranslations('nav');
 
   const config = FUND_CONFIG[fundType];
   const Icon = config.icon;
@@ -36,14 +39,14 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
           <Icon className={cn('h-6 w-6', config.color)} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{config.label} Fund</h1>
-          <p className="text-muted-foreground text-sm">{config.description}</p>
+          <h1 className="text-2xl font-bold">{t('fundTitle', { name: tf(fundType) })}</h1>
+          <p className="text-muted-foreground text-sm">{t(`${fundType}.description`)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         {(['balance', 'totalReceived', 'totalSpent'] as const).map((key) => {
-          const labels = { balance: 'Balance', totalReceived: 'Total Received', totalSpent: 'Total Spent' };
+          const labels = { balance: t('balance'), totalReceived: t('totalReceived'), totalSpent: t('totalSpent') };
           const colors = { balance: config.color, totalReceived: 'text-emerald-400', totalSpent: 'text-rose-400' };
           return (
             <Card key={key}>

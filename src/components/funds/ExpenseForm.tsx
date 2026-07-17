@@ -2,6 +2,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { addExpenseSchema, AddExpenseInput } from '@/lib/utils/validators';
 import { addExpense } from '@/lib/services/expense.service';
@@ -31,6 +32,8 @@ interface ExpenseFormProps {
 export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
   const { user } = useAuth();
   const { categories: allCategories } = useUserSettings();
+  const t = useTranslations('funds');
+  const tc = useTranslations('common');
 
   const {
     register,
@@ -45,14 +48,14 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
   });
 
   async function onSubmit(data: AddExpenseInput) {
-    if (!user) { toast.error('Not authenticated'); return; }
+    if (!user) { toast.error(tc('notAuthenticated')); return; }
     const result = await addExpense(data);
     if (result.success) {
-      toast.success('Expense recorded');
+      toast.success(t('expenseRecorded'));
       reset({ fundType, date: toInputDate() });
       onSuccess?.();
     } else {
-      toast.error('Failed to record expense');
+      toast.error(t('expenseFailed'));
     }
   }
 
@@ -61,20 +64,20 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Add Expense</CardTitle>
+        <CardTitle className="text-base">{t('addExpense')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <input type="hidden" {...register('fundType')} />
 
           <div className="space-y-2">
-            <Label>Category</Label>
+            <Label>{tc('category')}</Label>
             <Select
               onValueChange={(v) => setValue('category', v ?? '')}
               defaultValue=""
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder={t('selectCategory')} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
@@ -90,7 +93,7 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{tc('amount')}</Label>
             <Controller
               control={control}
               name="amount"
@@ -110,11 +113,11 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tc('description')}</Label>
             <Textarea
               id="description"
               rows={2}
-              placeholder="What was this expense for?"
+              placeholder={t('expenseDescriptionPlaceholder')}
               {...register('description')}
             />
             {errors.description && (
@@ -123,12 +126,12 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{tc('date')}</Label>
             <Input id="date" type="date" {...register('date')} />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Add Expense'}
+            {isSubmitting ? tc('saving') : t('addExpense')}
           </Button>
         </form>
       </CardContent>

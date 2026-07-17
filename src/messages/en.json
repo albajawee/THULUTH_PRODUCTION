@@ -57,7 +57,20 @@
     "balance": "Balance",
     "totalReceived": "Total Received",
     "totalSpent": "Total Spent",
-    "addExpense": "Add Expense"
+    "addExpense": "Add Expense",
+    "fundTitle": "{name} Fund",
+    "categoryBreakdown": "Category Breakdown",
+    "selectCategory": "Select category",
+    "expenseDescriptionPlaceholder": "What was this expense for?",
+    "expenseHistory": "Expense History",
+    "noExpenses": "No expenses recorded yet",
+    "expenseRecorded": "Expense recorded",
+    "expenseFailed": "Failed to record expense",
+    "deleteExpenseTitle": "Delete this expense?",
+    "deleteExpenseDesc": "This returns {amount} to the {fund} fund. The ledger keeps a record of both the original expense and the reversal.",
+    "deleteExpense": "Delete expense",
+    "expenseRefunded": "Refunded {amount} to the fund",
+    "expenseDeleteFailed": "Could not delete the expense"
   },
   "income": {
     "title": "Income",
@@ -150,6 +163,14 @@
     "confirm": "Confirm",
     "loading": "Loading...",
     "error": "Something went wrong",
-    "success": "Success"
+    "success": "Success",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "add": "Add",
+    "saving": "Saving…",
+    "working": "Working…",
+    "notAuthenticated": "Not authenticated"
   }
 }

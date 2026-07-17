@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Expense } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
@@ -19,20 +20,22 @@ interface ExpenseHistoryProps {
 
 export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('funds');
+  const tf = useTranslations('nav');
 
   async function handleDelete(expense: Expense) {
     const result = await reverseExpense({ expenseId: expense.id });
     if (result.success) {
-      toast.success(`Refunded ${formatCurrency(expense.amount, currency)} to the fund`);
+      toast.success(t('expenseRefunded', { amount: formatCurrency(expense.amount, currency) }));
     } else {
-      toast.error(result.error ?? 'Could not delete the expense');
+      toast.error(result.error ?? t('expenseDeleteFailed'));
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Expense History</CardTitle>
+        <CardTitle className="text-base">{t('expenseHistory')}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -44,7 +47,7 @@ export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
         ) : expenses.length === 0 ? (
           <div className="text-center py-10">
             <Receipt className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No expenses recorded yet</p>
+            <p className="text-sm text-muted-foreground">{t('noExpenses')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -76,14 +79,14 @@ export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
                         variant="ghost"
                         size="icon-sm"
                         className="text-muted-foreground hover:text-destructive"
-                        aria-label="Delete expense"
+                        aria-label={t('deleteExpense')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }
-                    title="Delete this expense?"
-                    description={`This returns ${formatCurrency(expense.amount, currency)} to the ${expense.fundType} fund. The ledger keeps a record of both the original expense and the reversal.`}
-                    confirmLabel="Delete expense"
+                    title={t('deleteExpenseTitle')}
+                    description={t('deleteExpenseDesc', { amount: formatCurrency(expense.amount, currency), fund: tf(expense.fundType) })}
+                    confirmLabel={t('deleteExpense')}
                     destructive
                     onConfirm={() => handleDelete(expense)}
                   />

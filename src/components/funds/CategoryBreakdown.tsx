@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Expense } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
@@ -14,6 +15,7 @@ interface CategoryBreakdownProps {
 
 export function CategoryBreakdown({ expenses }: CategoryBreakdownProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('funds');
   const byCategory: Record<string, number> = {};
   for (const e of expenses) {
     byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
@@ -29,7 +31,7 @@ export function CategoryBreakdown({ expenses }: CategoryBreakdownProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Category Breakdown</CardTitle>
+        <CardTitle className="text-base">{t('categoryBreakdown')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>

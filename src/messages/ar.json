@@ -57,7 +57,20 @@
     "balance": "الرصيد",
     "totalReceived": "إجمالي المستلم",
     "totalSpent": "إجمالي المنفق",
-    "addExpense": "إضافة مصروف"
+    "addExpense": "إضافة مصروف",
+    "fundTitle": "صندوق {name}",
+    "categoryBreakdown": "توزيع الفئات",
+    "selectCategory": "اختر الفئة",
+    "expenseDescriptionPlaceholder": "ما الغرض من هذا المصروف؟",
+    "expenseHistory": "سجل المصاريف",
+    "noExpenses": "لم يتم تسجيل مصاريف بعد",
+    "expenseRecorded": "تم تسجيل المصروف",
+    "expenseFailed": "فشل تسجيل المصروف",
+    "deleteExpenseTitle": "حذف هذا المصروف؟",
+    "deleteExpenseDesc": "سيعيد هذا {amount} إلى صندوق {fund}. يحتفظ السجل بقيد للمصروف الأصلي وللعكس معًا.",
+    "deleteExpense": "حذف المصروف",
+    "expenseRefunded": "تمت إعادة {amount} إلى الصندوق",
+    "expenseDeleteFailed": "تعذّر حذف المصروف"
   },
   "income": {
     "title": "الدخل",
@@ -150,6 +163,14 @@
     "confirm": "تأكيد",
     "loading": "جاري التحميل...",
     "error": "حدث خطأ ما",
-    "success": "تم بنجاح"
+    "success": "تم بنجاح",
+    "amount": "المبلغ",
+    "date": "التاريخ",
+    "description": "الوصف",
+    "category": "الفئة",
+    "add": "إضافة",
+    "saving": "جارٍ الحفظ…",
+    "working": "جارٍ التنفيذ…",
+    "notAuthenticated": "لم يتم تسجيل الدخول"
   }
 }
