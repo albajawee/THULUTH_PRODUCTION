@@ -1,12 +1,16 @@
 'use client';
 
+import { toast } from 'sonner';
 import { Expense } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
+import { reverseExpense } from '@/lib/services/expense.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Receipt } from 'lucide-react';
+import { Receipt, Trash2 } from 'lucide-react';
 
 interface ExpenseHistoryProps {
   expenses: Expense[];
@@ -15,6 +19,16 @@ interface ExpenseHistoryProps {
 
 export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
   const { currency } = useUserSettings();
+
+  async function handleDelete(expense: Expense) {
+    const result = await reverseExpense({ expenseId: expense.id });
+    if (result.success) {
+      toast.success(`Refunded ${formatCurrency(expense.amount, currency)} to the fund`);
+    } else {
+      toast.error(result.error ?? 'Could not delete the expense');
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -52,9 +66,28 @@ export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
                     </div>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-rose-400 tabular-nums ml-3">
-                  -{formatCurrency(expense.amount, currency)}
-                </span>
+                <div className="flex items-center gap-1 ml-3 shrink-0">
+                  <span className="text-sm font-semibold text-rose-400 tabular-nums">
+                    -{formatCurrency(expense.amount, currency)}
+                  </span>
+                  <ConfirmDialog
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label="Delete expense"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                    title="Delete this expense?"
+                    description={`This returns ${formatCurrency(expense.amount, currency)} to the ${expense.fundType} fund. The ledger keeps a record of both the original expense and the reversal.`}
+                    confirmLabel="Delete expense"
+                    destructive
+                    onConfirm={() => handleDelete(expense)}
+                  />
+                </div>
               </div>
             ))}
           </div>
