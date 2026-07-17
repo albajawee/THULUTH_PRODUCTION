@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { signUp } from '@/lib/firebase/auth';
-import { createUserProfile } from '@/lib/services/user.service';
 import { registerSchema, RegisterInput } from '@/lib/utils/validators';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,8 +24,9 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterInput) {
     setLoading(true);
     try {
-      const credential = await signUp(data.email, data.password, data.displayName);
-      await createUserProfile(credential.user.uid, data.displayName, data.email);
+      // signUp establishes the HttpOnly session server-side, which also creates the
+      // profile and the four funds from the verified uid.
+      await signUp(data.email, data.password, data.displayName);
       toast.success('Account created! Welcome to THULUTH.');
       router.push('/dashboard');
       router.refresh();

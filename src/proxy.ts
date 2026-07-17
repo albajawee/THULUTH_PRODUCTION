@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SESSION_COOKIE } from '@/lib/auth/constants';
 
 const PUBLIC_ROUTES = ['/login', '/register'];
 const DEFAULT_REDIRECT = '/dashboard';
@@ -15,9 +16,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
-  const sessionCookie =
-    request.cookies.get('__session')?.value ??
-    request.cookies.get('firebase-auth-token')?.value;
+  const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
 
   if (!isPublicRoute && !sessionCookie) {
     const loginUrl = new URL('/login', request.url);

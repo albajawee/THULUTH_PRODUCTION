@@ -2,11 +2,14 @@
 
 import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { requireUser } from '../auth/session';
 import { addExpenseSchema } from '../utils/validators';
 import { Expense, FundType } from '../types';
 import { revalidatePath } from 'next/cache';
 
-export async function addExpense(userId: string, rawData: unknown) {
+export async function addExpense(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
   const parsed = addExpenseSchema.safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };

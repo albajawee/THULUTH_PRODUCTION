@@ -33,7 +33,7 @@ export function DonationForm({ onSuccess }: DonationFormProps) {
 
   async function onSubmit(data: AddDonationInput) {
     if (!user) { toast.error('Not authenticated'); return; }
-    const result = await recordDonation(user.uid, data);
+    const result = await recordDonation(data);
     if (result.success) {
       toast.success('Donation recorded');
       reset({ date: toInputDate() });

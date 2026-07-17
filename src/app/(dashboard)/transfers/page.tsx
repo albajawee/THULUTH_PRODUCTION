@@ -49,7 +49,7 @@ export default function TransfersPage() {
 
   async function onSubmit(data: CreateTransferInput) {
     if (!user) return;
-    const result = await transferFunds(user.uid, data);
+    const result = await transferFunds(data);
     if (result.success) {
       toast.success('Transfer completed!');
       reset();

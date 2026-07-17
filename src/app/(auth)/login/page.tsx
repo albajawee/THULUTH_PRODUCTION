@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { signIn } from '@/lib/firebase/auth';
-import { initFunds } from '@/lib/services/user.service';
 import { loginSchema, LoginInput } from '@/lib/utils/validators';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,8 +24,9 @@ export default function LoginPage() {
   async function onSubmit(data: LoginInput) {
     setLoading(true);
     try {
-      const credential = await signIn(data.email, data.password);
-      await initFunds(credential.user.uid);
+      // signIn establishes the HttpOnly session server-side, which also bootstraps
+      // the profile and funds. Nothing to do here but navigate.
+      await signIn(data.email, data.password);
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {

@@ -95,7 +95,7 @@ export default function SettingsPage() {
 
   async function onSubmit(data: UpdateUserSettingsInput) {
     if (!user) return;
-    const result = await updateUserSettings(user.uid, data);
+    const result = await updateUserSettings(data);
     if (result.success) {
       // Persist locale preference in cookie
       if (data.selectedLanguage) {

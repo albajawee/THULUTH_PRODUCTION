@@ -2,11 +2,14 @@
 
 import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { requireUser } from '../auth/session';
 import { createTransferSchema } from '../utils/validators';
 import { Transfer } from '../types';
 import { revalidatePath } from 'next/cache';
 
-export async function transferFunds(userId: string, rawData: unknown) {
+export async function transferFunds(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
   const parsed = createTransferSchema.safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };

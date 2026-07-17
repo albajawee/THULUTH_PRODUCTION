@@ -186,9 +186,43 @@ once billing exists. Nothing here forecloses B.
 
 ---
 
-## 4. P1 — Multi-tenant security (est. 2–3 days) 🔴 **the actual blocker**
+## 4. P1 — Multi-tenant security ✅ **CORE COMPLETE** (2026-07-17) — §4.4 extras remain
 
-### 4.1 Session cookies (replace the JS-readable token)
+**Implemented on branch `p1-multi-tenant-security`:**
+
+- `src/lib/auth/constants.ts` — runtime-neutral `SESSION_COOKIE`. Separate from `session.ts`
+  because `proxy.ts` needs the name but **cannot import a `server-only` module that pulls in
+  firebase-admin**. That split is load-bearing, not cosmetic.
+- `src/lib/auth/session.ts` — `getSession()` / `requireUser()`, returning the **`ownerId` seam**
+  from §9. `verifySessionCookie(cookie, true)` checks revocation on every call.
+- `src/app/api/session/route.ts` — `POST` (verify ID token → mint HttpOnly session cookie →
+  bootstrap) and `DELETE` (revoke refresh tokens → clear cookie). `runtime = 'nodejs'`.
+- `src/lib/services/bootstrap.ts` — `ensureUserBootstrapped()`. **Deliberately not `'use server'`**:
+  it takes a uid, and every export of a `'use server'` file is a public endpoint. Keeping it
+  outside the action boundary makes "verified uid only" structural.
+- `firebase/auth.ts` — `signIn`/`signUp`/`logOut` call the session endpoint. **No `document.cookie`
+  anywhere.** On session failure, `signOut()` runs so the client can't believe it's authenticated
+  when the server disagrees.
+- **All 8 server actions** now take no identity: `const { ownerId: userId } = await requireUser()`.
+  Bodies unchanged, so the money logic carries no refactor risk.
+- `proxy.ts` — accepts only `__session`; the forgeable `firebase-auth-token` fallback is gone.
+
+**Verified at runtime** (not just compiled):
+
+| Probe | Result |
+|---|---|
+| `POST /api/session` w/ forged idToken | **401** ✅ |
+| `POST /api/session` empty body / bad JSON | **400** ✅ |
+| `GET /dashboard` with no cookie | **307 → /login** ✅ |
+| `DELETE /api/session` | **200** ✅ |
+| `npm run check` | **exit 0** ✅ |
+
+**The invariant, and how it's enforced:** no `'use server'` export accepts a `userId`. The only
+`userId` parameter left in `services/` is `initFundsFor` in the non-action `bootstrap.ts`. Because
+the parameter is *deleted* rather than ignored, a future action that tries to trust the client
+won't typecheck against its call sites — the vulnerability is unrepresentable, not merely absent.
+
+### 4.1 Session cookies (replace the JS-readable token) — ✅ done
 
 1. Add `POST /api/session` route handler: takes the Firebase ID token, verifies it with
    `adminAuth.verifyIdToken()`, mints `adminAuth.createSessionCookie()` (up to 14 days), sets it
@@ -239,11 +273,21 @@ docs are explicit about this:
 So: proxy keeps the cheap cookie-presence check **for redirect UX only**. Real authorization lives
 in `requireUser()` inside every action and every protected page. Never trust the proxy for auth.
 
-### 4.4 Also
-- [ ] Rate-limit server actions (per-uid) — money mutations are abuse targets.
-- [ ] `initFunds` should run on **session creation server-side**, not from the login page.
-- [ ] Add `allow delete` path for account erasure (GDPR) — currently impossible by rule.
-- [ ] Enforce email verification before money operations.
+### 4.4 Also — ⬜ **still open, do before launch**
+- [x] `initFunds` runs on **session creation server-side**, not from the login page.
+- [ ] **Rate-limit server actions** (per-uid) — money mutations are abuse targets. `requireUser()`
+      is now the single choke point every action passes through, so this is a natural next step
+      (~half a day).
+- [ ] **Account erasure (GDPR)** — `firestore.rules` still says `allow delete: if false` on user
+      profiles, so deletion is impossible *by rule*. Needs a server-side cascade delete + a rules
+      change. Blocking for EU users.
+- [ ] **Email verification before money operations.** `session.ts` already surfaces
+      `emailVerified` on every `Session`; nothing gates on it yet. Decide whether unverified users
+      may write.
+
+> These are the reason P1 is "core complete", not "complete". The **breach-class** problem (any
+> user reaching any other user's data) is closed and verified. What remains is abuse-hardening and
+> compliance — real, but not the thing that made a second user negligent.
 
 ---
 

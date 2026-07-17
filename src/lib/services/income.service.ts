@@ -2,12 +2,15 @@
 
 import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { requireUser } from '../auth/session';
 import { distributeIncome } from '../utils/calculations';
 import { addIncomeSchema } from '../utils/validators';
 import { FundType, Income } from '../types';
 import { revalidatePath } from 'next/cache';
 
-export async function addIncome(userId: string, rawData: unknown) {
+export async function addIncome(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
   const parsed = addIncomeSchema.safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };

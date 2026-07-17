@@ -51,7 +51,7 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
 
   async function onSubmit(data: AddExpenseInput) {
     if (!user) { toast.error('Not authenticated'); return; }
-    const result = await addExpense(user.uid, data);
+    const result = await addExpense(data);
     if (result.success) {
       toast.success('Expense recorded');
       reset({ fundType, date: toInputDate() });

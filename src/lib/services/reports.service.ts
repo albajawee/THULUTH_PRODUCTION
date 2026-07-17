@@ -1,6 +1,7 @@
 'use server';
 
 import { adminDb } from '../firebase/admin';
+import { requireUser } from '../auth/session';
 import { Income, Expense, Donation, Goal, Fund } from '../types';
 import { calcGoalProgress } from '../utils/calculations';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, format } from 'date-fns';
@@ -42,10 +43,11 @@ async function getCollectionInRange<T>(
 }
 
 export async function getMonthlyReport(
-  userId: string,
   year: number,
   month: number
 ): Promise<MonthlyReport> {
+  const { ownerId: userId } = await requireUser();
+
   const start = format(startOfMonth(new Date(year, month - 1)), 'yyyy-MM-dd');
   const end = format(endOfMonth(new Date(year, month - 1)), 'yyyy-MM-dd');
 
@@ -108,9 +110,10 @@ export async function getMonthlyReport(
 }
 
 export async function getYearlyReport(
-  userId: string,
   year: number
 ): Promise<YearlyReport> {
+  const { ownerId: userId } = await requireUser();
+
   const start = format(startOfYear(new Date(year, 0)), 'yyyy-MM-dd');
   const end = format(endOfYear(new Date(year, 0)), 'yyyy-MM-dd');
 

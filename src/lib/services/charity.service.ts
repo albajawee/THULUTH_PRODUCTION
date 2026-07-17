@@ -2,11 +2,14 @@
 
 import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { requireUser } from '../auth/session';
 import { addDonationSchema } from '../utils/validators';
 import { Donation } from '../types';
 import { revalidatePath } from 'next/cache';
 
-export async function recordDonation(userId: string, rawData: unknown) {
+export async function recordDonation(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
   const parsed = addDonationSchema.safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };

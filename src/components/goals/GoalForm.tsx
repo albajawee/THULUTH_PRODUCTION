@@ -45,7 +45,7 @@ export function GoalForm({ onSuccess }: GoalFormProps) {
 
   async function onSubmit(data: CreateGoalInput) {
     if (!user) { toast.error('Not authenticated'); return; }
-    const result = await createGoal(user.uid, data);
+    const result = await createGoal(data);
     if (result.success) {
       toast.success('Goal created!');
       reset();

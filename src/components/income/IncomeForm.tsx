@@ -36,7 +36,7 @@ export function IncomeForm() {
 
   async function onSubmit(data: AddIncomeInput) {
     if (!user) { toast.error('Not authenticated'); return; }
-    const result = await addIncome(user.uid, data);
+    const result = await addIncome(data);
     if (result.success) {
       toast.success('Income added and distributed!');
       router.push('/income');

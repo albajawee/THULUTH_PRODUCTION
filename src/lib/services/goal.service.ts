@@ -1,11 +1,14 @@
 'use server';
 
 import { adminDb } from '../firebase/admin';
+import { requireUser } from '../auth/session';
 import { createGoalSchema } from '../utils/validators';
 import { FundType, Goal } from '../types';
 import { revalidatePath } from 'next/cache';
 
-export async function createGoal(userId: string, rawData: unknown) {
+export async function createGoal(rawData: unknown) {
+  const { ownerId: userId } = await requireUser();
+
   const parsed = createGoalSchema.safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };

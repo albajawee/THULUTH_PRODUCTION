@@ -31,8 +31,8 @@ export default function ReportsPage() {
     if (!user) return;
     setLoading(true);
     Promise.all([
-      getMonthlyReport(user.uid, year, month),
-      getYearlyReport(user.uid, year),
+      getMonthlyReport(year, month),
+      getYearlyReport(year),
     ]).then(([m, y]) => {
       setMonthlyReport(m);
       setYearlyReport(y);
