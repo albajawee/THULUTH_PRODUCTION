@@ -6,9 +6,15 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
 import { BottomNav } from '@/components/layout/BottomNav';
 
-export function DashboardShell({ children }: { children: ReactNode }) {
+export function DashboardShell({
+  children,
+  initialCurrency,
+}: {
+  children: ReactNode;
+  initialCurrency?: string;
+}) {
   return (
-    <UserSettingsProvider>
+    <UserSettingsProvider initialCurrency={initialCurrency}>
       <div className="flex min-h-screen bg-background">
         <Sidebar />
         <div className="flex flex-col flex-1 min-w-0">

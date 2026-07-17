@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Sun, Moon, LogOut, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ export function TopBar() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const t = useTranslations('nav');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -85,7 +87,7 @@ export function TopBar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              {t('settings')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -93,7 +95,7 @@ export function TopBar() {
               className="text-destructive cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Sign out
+              {t('logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

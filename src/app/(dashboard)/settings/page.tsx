@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { updateUserSettings } from '@/lib/services/user.service';
 import { userRepository } from '@/lib/repositories/user.repository';
@@ -15,16 +16,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryManager } from '@/components/settings/CategoryManager';
+import { User, Sliders, Palette, Sun, Moon } from 'lucide-react';
 
 const CURRENCIES = [
   { value: 'AED', label: 'UAE Dirham (AED)' },
@@ -69,17 +66,17 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const t = useTranslations('settings');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const {
-    register,
-    handleSubmit,
-    setValue,
+    register, handleSubmit, setValue,
     formState: { isSubmitting },
-  } = useForm<UpdateUserSettingsInput>({
-    resolver: zodResolver(updateUserSettingsSchema),
-  });
+  } = useForm<UpdateUserSettingsInput>({ resolver: zodResolver(updateUserSettingsSchema) });
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!user) return;
@@ -98,55 +95,64 @@ export default function SettingsPage() {
     if (!user) return;
     const result = await updateUserSettings(data);
     if (result.success) {
-      // Persist locale preference in cookie
+      // Instant RTL flip; the persistent cookie is set server-side in the action.
       if (data.selectedLanguage) {
-        document.cookie = `locale=${data.selectedLanguage}; path=/; max-age=31536000`;
         document.documentElement.dir = data.selectedLanguage === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = data.selectedLanguage;
       }
-      toast.success('Settings saved!');
+      toast.success(t('saved'));
       router.refresh();
     } else {
-      toast.error('Failed to save settings');
+      toast.error(t('saveFailed'));
     }
   }
 
-  if (loading) return <Skeleton className="h-64 rounded-xl w-full max-w-lg" />;
+  if (loading) return <Skeleton className="h-64 w-full max-w-2xl rounded-xl" />;
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground text-sm">Manage your account preferences</p>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Profile</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Profile */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <User className="h-4 w-4 text-muted-foreground" />
+              {t('profile')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
+              <Label htmlFor="displayName">{t('displayName')}</Label>
               <Input id="displayName" {...register('displayName')} />
             </div>
-
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={user?.email ?? ''} disabled className="opacity-50" />
+              <Label>{t('email')}</Label>
+              <Input value={user?.email ?? ''} disabled className="opacity-60" />
             </div>
+          </CardContent>
+        </Card>
 
-            <Separator />
-
+        {/* Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Sliders className="h-4 w-4 text-muted-foreground" />
+              {t('preferences')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Currency</Label>
+              <Label>{t('currency')}</Label>
               <Select
                 defaultValue={profile?.selectedCurrency ?? 'SAR'}
                 onValueChange={(v) => setValue('selectedCurrency', v ?? undefined)}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CURRENCIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
@@ -154,53 +160,59 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
-              <Label>Language</Label>
+              <Label>{t('language')}</Label>
               <Select
                 defaultValue={profile?.selectedLanguage ?? 'en'}
                 onValueChange={(v) => setValue('selectedLanguage', (v as 'en' | 'ar') ?? undefined)}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="ar">العربية</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </CardContent>
+        </Card>
 
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>Theme</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={theme === 'dark' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTheme('dark')}
-                >
-                  Dark
-                </Button>
-                <Button
-                  type="button"
-                  variant={theme === 'light' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTheme('light')}
-                >
-                  Light
-                </Button>
-              </div>
+        {/* Appearance — theme applies instantly, no save needed */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              {t('appearance')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Label className="mb-2 block">{t('theme')}</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={mounted && theme === 'dark' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme('dark')}
+              >
+                <Moon className="mr-1.5 h-4 w-4" />
+                {t('dark')}
+              </Button>
+              <Button
+                type="button"
+                variant={mounted && theme === 'light' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme('light')}
+              >
+                <Sun className="mr-1.5 h-4 w-4" />
+                {t('light')}
+              </Button>
             </div>
+          </CardContent>
+        </Card>
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? `${t('save')}…` : t('save')}
+        </Button>
+      </form>
 
       <CategoryManager />
     </div>

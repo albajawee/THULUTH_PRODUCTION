@@ -1,9 +1,12 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { adminDb } from '../firebase/admin';
 import { requireUser } from '../auth/session';
 import { updateUserSettingsSchema, updateFundCategoriesSchema } from '../utils/validators';
 import { revalidatePath } from 'next/cache';
+
+const ONE_YEAR = 60 * 60 * 24 * 365;
 
 /**
  * Note: `initFunds` and `createUserProfile` used to live here as server actions taking a uid from
@@ -25,6 +28,16 @@ export async function updateUserSettings(rawData: unknown) {
     { ...parsed.data, updatedAt: now },
     { merge: true }
   );
+
+  // Mirror preferences into cookies the server can read on the next request, so the first paint
+  // already reflects them (no flash). `locale` also drives the RTL direction in the root layout.
+  const jar = await cookies();
+  if (parsed.data.selectedCurrency) {
+    jar.set('currency', parsed.data.selectedCurrency, { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
+  }
+  if (parsed.data.selectedLanguage) {
+    jar.set('locale', parsed.data.selectedLanguage, { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
+  }
 
   revalidatePath('/settings');
   return { success: true };

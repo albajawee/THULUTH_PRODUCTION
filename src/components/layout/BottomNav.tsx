@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard,
   Wallet,
@@ -19,16 +20,16 @@ import { QuickAddExpense } from '@/components/mobile/QuickAddExpense';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const TABS = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/income', label: 'Income', icon: Wallet },
-  { href: '/goals', label: 'Goals', icon: Target },
-];
+  { href: '/dashboard', key: 'home', icon: LayoutDashboard },
+  { href: '/income', key: 'income', icon: Wallet },
+  { href: '/goals', key: 'goals', icon: Target },
+] as const;
 
 const MORE_LINKS = [
-  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/settings', label: 'Settings', icon: Settings },
-];
+  { href: '/transfers', key: 'transfers', icon: ArrowLeftRight },
+  { href: '/reports', key: 'reports', icon: BarChart3 },
+  { href: '/settings', key: 'settings', icon: Settings },
+] as const;
 
 /**
  * Mobile navigation. The desktop Sidebar is `hidden md:flex`, which previously left phones with no
@@ -40,6 +41,7 @@ const MORE_LINKS = [
  */
 export function BottomNav() {
   const pathname = usePathname();
+  const t = useTranslations('nav');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -50,8 +52,8 @@ export function BottomNav() {
         aria-label="Main"
       >
         <div className="mx-auto flex max-w-lg items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
-          {TABS.slice(0, 2).map(({ href, label, icon: Icon }) => (
-            <NavTab key={href} href={href} label={label} Icon={Icon} active={pathname === href} />
+          {TABS.slice(0, 2).map(({ href, key, icon: Icon }) => (
+            <NavTab key={href} href={href} label={t(key)} Icon={Icon} active={pathname === href} />
           ))}
 
           {/* Quick add — centre position, the easiest point on the screen to reach one-handed */}
@@ -66,21 +68,21 @@ export function BottomNav() {
             </span>
           </button>
 
-          {TABS.slice(2).map(({ href, label, icon: Icon }) => (
-            <NavTab key={href} href={href} label={label} Icon={Icon} active={pathname === href} />
+          {TABS.slice(2).map(({ href, key, icon: Icon }) => (
+            <NavTab key={href} href={href} label={t(key)} Icon={Icon} active={pathname === href} />
           ))}
 
           <button
             type="button"
             onClick={() => setMoreOpen(true)}
-            aria-label="More"
+            aria-label={t('more')}
             className={cn(
               'flex min-w-16 flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium transition-colors',
               moreOpen ? 'text-primary' : 'text-muted-foreground'
             )}
           >
             <MoreHorizontal className="h-5 w-5" />
-            More
+            {t('more')}
           </button>
         </div>
       </nav>
@@ -93,12 +95,12 @@ export function BottomNav() {
           className="rounded-t-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
         >
           <SheetHeader className="pb-0">
-            <SheetTitle>More</SheetTitle>
+            <SheetTitle>{t('more')}</SheetTitle>
           </SheetHeader>
 
           <div className="px-4 pb-2">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Funds
+              {t('funds')}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {FUND_ORDER.map((fundId) => {
@@ -112,7 +114,7 @@ export function BottomNav() {
                     className="flex min-h-12 items-center gap-2 rounded-xl border border-border/60 px-3 py-2.5 text-sm font-medium"
                   >
                     <Icon className={cn('h-4 w-4 shrink-0', config.color)} />
-                    <span className="truncate">{config.label}</span>
+                    <span className="truncate">{t(fundId)}</span>
                     <span className="ml-auto text-xs text-muted-foreground">
                       {config.percentage}%
                     </span>
@@ -122,10 +124,10 @@ export function BottomNav() {
             </div>
 
             <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tools
+              {t('tools')}
             </p>
             <div className="flex flex-col">
-              {MORE_LINKS.map(({ href, label, icon: Icon }) => (
+              {MORE_LINKS.map(({ href, key, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
@@ -133,7 +135,7 @@ export function BottomNav() {
                   className="flex min-h-12 items-center gap-3 rounded-lg px-2 text-sm font-medium"
                 >
                   <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  {label}
+                  {t(key)}
                 </Link>
               ))}
             </div>

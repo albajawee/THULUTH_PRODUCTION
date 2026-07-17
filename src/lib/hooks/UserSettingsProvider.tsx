@@ -20,9 +20,17 @@ const UserSettingsContext = createContext<UserSettingsContextType>({
   categories: DEFAULT_CATEGORIES_BY_FUND,
 });
 
-export function UserSettingsProvider({ children }: { children: ReactNode }) {
+export function UserSettingsProvider({
+  children,
+  initialCurrency = 'SAR',
+}: {
+  children: ReactNode;
+  initialCurrency?: string;
+}) {
   const { user } = useAuth();
-  const [currency, setCurrency] = useState('SAR');
+  // Seeded from the server-read `currency` cookie so first paint matches the saved currency (no
+  // flash). The Firestore snapshot below stays the source of truth and corrects it if they differ.
+  const [currency, setCurrency] = useState(initialCurrency);
   const [language, setLanguage] = useState('en');
   const [categories, setCategories] = useState<Record<FundType, string[]>>(DEFAULT_CATEGORIES_BY_FUND);
 

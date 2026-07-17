@@ -2,32 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { FUND_ORDER } from '@/lib/constants/fund-config';
 import { FUND_CONFIG } from '@/lib/constants/fund-config';
 import {
   LayoutDashboard,
-  TrendingUp,
   ArrowLeftRight,
   BarChart3,
   Target,
   Wallet,
-  HandHeart,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/income', label: 'Income', icon: Wallet },
-];
+  { href: '/dashboard', key: 'dashboard', icon: LayoutDashboard },
+  { href: '/income', key: 'income', icon: Wallet },
+] as const;
 
 const REPORT_ITEMS = [
-  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight },
-  { href: '/goals', label: 'Goals', icon: Target },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
-];
+  { href: '/transfers', key: 'transfers', icon: ArrowLeftRight },
+  { href: '/goals', key: 'goals', icon: Target },
+  { href: '/reports', key: 'reports', icon: BarChart3 },
+] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations('nav');
 
   return (
     <aside className="hidden md:flex print:hidden flex-col w-64 min-h-screen bg-card border-r border-border/50 p-4">
@@ -42,7 +42,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+        {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
           <Link
             key={href}
             href={href}
@@ -54,13 +54,13 @@ export function Sidebar() {
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            {label}
+            {t(key)}
           </Link>
         ))}
 
         <div className="pt-4 pb-2">
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Funds
+            {t('funds')}
           </p>
           {FUND_ORDER.map((fundId) => {
             const config = FUND_CONFIG[fundId];
@@ -77,7 +77,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn('h-4 w-4 shrink-0', config.color)} />
-                <span>{config.label}</span>
+                <span>{t(fundId)}</span>
                 <span className="ml-auto text-xs text-muted-foreground">{config.percentage}%</span>
               </Link>
             );
@@ -86,9 +86,9 @@ export function Sidebar() {
 
         <div className="pt-2">
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Tools
+            {t('tools')}
           </p>
-          {REPORT_ITEMS.map(({ href, label, icon: Icon }) => (
+          {REPORT_ITEMS.map(({ href, key, icon: Icon }) => (
             <Link
               key={href}
               href={href}
@@ -100,7 +100,7 @@ export function Sidebar() {
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {label}
+              {t(key)}
             </Link>
           ))}
         </div>

@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "home": "Home",
     "income": "Income",
     "stability": "Stability",
     "growth": "Growth",
@@ -10,7 +11,10 @@
     "transfers": "Transfers",
     "reports": "Reports",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "more": "More",
+    "funds": "Funds",
+    "tools": "Tools"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -105,12 +109,25 @@
   },
   "settings": {
     "title": "Settings",
+    "subtitle": "Manage your account and preferences",
     "profile": "Profile",
     "displayName": "Display Name",
+    "email": "Email",
+    "preferences": "Preferences",
     "currency": "Currency",
     "language": "Language",
+    "appearance": "Appearance",
     "theme": "Theme",
-    "save": "Save Changes"
+    "dark": "Dark",
+    "light": "Light",
+    "save": "Save Changes",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "categories": "Expense Categories",
+    "categoriesDesc": "Customise the categories offered when you add an expense to each fund. Removing one never changes expenses you already recorded.",
+    "addCategoryPlaceholder": "Add a category…",
+    "noCategories": "No categories — add one below.",
+    "add": "Add"
   },
   "common": {
     "save": "Save",
