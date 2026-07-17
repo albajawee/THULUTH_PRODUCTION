@@ -3,8 +3,14 @@ export type AuditAction =
   | 'expense_added'
   | 'goal_created'
   | 'goal_allocated'
+  | 'goal_status_changed'
+  | 'goal_deleted'
   | 'transfer_created'
+  | 'transfer_reversed'
   | 'donation_recorded'
+  | 'donation_reversed'
+  | 'income_reversed'
+  | 'expense_reversed'
   | 'funds_initialized'
   | 'settings_updated';
 

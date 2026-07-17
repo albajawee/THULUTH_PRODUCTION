@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GoalActions } from '@/components/goals/GoalActions';
 import { Target, Calendar, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -123,6 +124,8 @@ export default function GoalDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      <GoalActions goal={goal} />
     </div>
   );
 }

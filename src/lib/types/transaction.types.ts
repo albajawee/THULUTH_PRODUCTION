@@ -7,6 +7,7 @@ export type TransactionType =
   | 'transfer_out'
   | 'goal_allocation'
   | 'donation'
+  | 'reversal'
   | 'adjustment';
 
 export type RelatedEntityType =
