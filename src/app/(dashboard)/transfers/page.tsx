@@ -5,6 +5,7 @@ import { useFunds } from '@/lib/hooks/useFunds';
 import { useTransfers } from '@/lib/hooks/useTransfers';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { createTransferSchema, CreateTransferInput } from '@/lib/utils/validators';
 import { transferFunds, reverseTransfer } from '@/lib/services/transfer.service';
@@ -36,6 +37,9 @@ export default function TransfersPage() {
   const { funds } = useFunds(user?.uid ?? null);
   const { transfers, loading } = useTransfers(user?.uid ?? null);
   const { currency } = useUserSettings();
+  const tt = useTranslations('transfers');
+  const tc = useTranslations('common');
+  const tf = useTranslations('nav');
 
   const {
     register,
@@ -55,10 +59,10 @@ export default function TransfersPage() {
     if (!user) return;
     const result = await transferFunds(data);
     if (result.success) {
-      toast.success('Transfer completed!');
+      toast.success(tt('completedToast'));
       reset();
     } else {
-      const msg = result.error?.amount?.[0] ?? result.error?.toFund?.[0] ?? 'Transfer failed';
+      const msg = result.error?.amount?.[0] ?? result.error?.toFund?.[0] ?? tt('failedToast');
       toast.error(msg);
     }
   }
@@ -66,17 +70,17 @@ export default function TransfersPage() {
   async function handleUndo(transferId: string) {
     const result = await reverseTransfer({ transferId });
     if (result.success) {
-      toast.success('Transfer undone');
+      toast.success(tt('undoneToast'));
     } else {
-      toast.error(result.error ?? 'Could not undo the transfer');
+      toast.error(result.error ?? tt('undoFailedToast'));
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Transfers</h1>
-        <p className="text-muted-foreground text-sm">Move funds between your four funds</p>
+        <h1 className="text-2xl font-bold">{tt('title')}</h1>
+        <p className="text-muted-foreground text-sm">{tt('subtitle')}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -84,24 +88,23 @@ export default function TransfersPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <ArrowLeftRight className="h-4 w-4" />
-              New Transfer
+              {tt('newTransfer')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label>From Fund</Label>
+                <Label>{tt('from')}</Label>
                 <Select onValueChange={(v) => setValue('fromFund', (v ?? 'stability') as FundType)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select source fund" />
+                    <SelectValue placeholder={tt('selectSource')} />
                   </SelectTrigger>
                   <SelectContent>
                     {FUND_ORDER.map((fundId) => {
-                      const config = FUND_CONFIG[fundId];
                       const balance = funds?.[fundId]?.balance ?? 0;
                       return (
                         <SelectItem key={fundId} value={fundId}>
-                          {config.label} ({formatCurrency(balance, currency)})
+                          {tf(fundId)} ({formatCurrency(balance, currency)})
                         </SelectItem>
                       );
                     })}
@@ -111,27 +114,24 @@ export default function TransfersPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>To Fund</Label>
+                <Label>{tt('to')}</Label>
                 <Select onValueChange={(v) => setValue('toFund', (v ?? 'growth') as FundType)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select destination fund" />
+                    <SelectValue placeholder={tt('selectDest')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {FUND_ORDER.filter((f) => f !== fromFund).map((fundId) => {
-                      const config = FUND_CONFIG[fundId];
-                      return (
-                        <SelectItem key={fundId} value={fundId}>
-                          {config.label}
-                        </SelectItem>
-                      );
-                    })}
+                    {FUND_ORDER.filter((f) => f !== fromFund).map((fundId) => (
+                      <SelectItem key={fundId} value={fundId}>
+                        {tf(fundId)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {errors.toFund && <p className="text-sm text-destructive">{errors.toFund.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">{tt('amount')}</Label>
                 <Controller
                   control={control}
                   name="amount"
@@ -148,13 +148,13 @@ export default function TransfersPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reason">Reason</Label>
-                <Textarea id="reason" rows={2} placeholder="Why are you transferring?" {...register('reason')} />
+                <Label htmlFor="reason">{tt('reason')}</Label>
+                <Textarea id="reason" rows={2} placeholder={tt('reasonPlaceholder')} {...register('reason')} />
                 {errors.reason && <p className="text-sm text-destructive">{errors.reason.message}</p>}
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Transferring...' : 'Transfer Funds'}
+                {isSubmitting ? tt('transferring') : tt('transferFunds')}
               </Button>
             </form>
           </CardContent>
@@ -162,11 +162,11 @@ export default function TransfersPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Transfer History</CardTitle>
+            <CardTitle className="text-base">{tt('history')}</CardTitle>
           </CardHeader>
           <CardContent>
             {transfers.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">No transfers yet.</p>
+              <p className="text-sm text-muted-foreground text-center py-10">{tt('noTransfers')}</p>
             ) : (
               <div className="space-y-2">
                 {transfers.map((t) => {
@@ -178,10 +178,10 @@ export default function TransfersPage() {
                     <div key={t.id} className="p-3 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2 text-sm">
                         <FromIcon className={cn('h-3.5 w-3.5', from.color)} />
-                        <span className={from.color}>{from.label}</span>
+                        <span className={from.color}>{tf(t.fromFund)}</span>
                         <ArrowLeftRight className="h-3 w-3 text-muted-foreground" />
                         <ToIcon className={cn('h-3.5 w-3.5', to.color)} />
-                        <span className={to.color}>{to.label}</span>
+                        <span className={to.color}>{tf(t.toFund)}</span>
                         <span className="ml-auto font-semibold">{formatCurrency(t.amount, currency)}</span>
                         <ConfirmDialog
                           trigger={
@@ -189,14 +189,14 @@ export default function TransfersPage() {
                               variant="ghost"
                               size="icon-sm"
                               className="text-muted-foreground hover:text-destructive"
-                              aria-label="Undo transfer"
+                              aria-label={tt('undo')}
                             >
                               <Undo2 className="h-4 w-4" />
                             </Button>
                           }
-                          title="Undo this transfer?"
-                          description={`This moves ${formatCurrency(t.amount, currency)} back from ${to.label} to ${from.label}. Both funds are restored and the ledger records the reversal.`}
-                          confirmLabel="Undo transfer"
+                          title={tt('undoTitle')}
+                          description={tt('undoDesc', { amount: formatCurrency(t.amount, currency), to: tf(t.toFund), from: tf(t.fromFund) })}
+                          confirmLabel={tt('undoConfirm')}
                           destructive
                           onConfirm={() => handleUndo(t.id)}
                         />
