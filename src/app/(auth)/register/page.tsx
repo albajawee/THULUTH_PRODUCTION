@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { signUp } from '@/lib/firebase/auth';
@@ -15,6 +16,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
@@ -27,11 +29,11 @@ export default function RegisterPage() {
       // signUp establishes the HttpOnly session server-side, which also creates the
       // profile and the four funds from the verified uid.
       await signUp(data.email, data.password, data.displayName);
-      toast.success('Account created! Welcome to THULUTH.');
+      toast.success(t('accountCreated'));
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create account';
+      const message = err instanceof Error ? err.message : t('createFailed');
       toast.error(message);
     } finally {
       setLoading(false);
@@ -44,17 +46,17 @@ export default function RegisterPage() {
         <div className="flex justify-center mb-2">
           <span className="text-4xl font-bold tracking-tight">ثلث</span>
         </div>
-        <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Start managing your wealth with THULUTH</CardDescription>
+        <CardTitle className="text-2xl">{t('createTitle')}</CardTitle>
+        <CardDescription>{t('createSubtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="displayName">Full Name</Label>
+            <Label htmlFor="displayName">{t('name')}</Label>
             <Input
               id="displayName"
               type="text"
-              placeholder="Your name"
+              placeholder={t('namePlaceholder')}
               {...register('displayName')}
             />
             {errors.displayName && (
@@ -62,11 +64,11 @@ export default function RegisterPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('emailPlaceholder')}
               {...register('email')}
             />
             {errors.email && (
@@ -74,11 +76,11 @@ export default function RegisterPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Min. 8 characters"
+              placeholder={t('passwordPlaceholder')}
               {...register('password')}
             />
             {errors.password && (
@@ -86,15 +88,15 @@ export default function RegisterPage() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('creatingAccount') : t('register')}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('hasAccount')}{' '}
           <Link href="/login" className="text-primary hover:underline font-medium">
-            Sign in
+            {t('signIn')}
           </Link>
         </p>
       </CardFooter>

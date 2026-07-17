@@ -210,7 +210,20 @@
     "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟",
     "signUp": "تسجيل",
-    "signIn": "دخول"
+    "signIn": "دخول",
+    "welcomeBack": "مرحبًا بعودتك",
+    "loginSubtitle": "سجّل الدخول إلى حسابك في ثلث",
+    "signingIn": "جاري تسجيل الدخول...",
+    "signInFailed": "فشل تسجيل الدخول",
+    "createOne": "أنشئ حسابًا",
+    "createTitle": "أنشئ حسابك",
+    "createSubtitle": "ابدأ بإدارة ثروتك مع ثلث",
+    "namePlaceholder": "اسمك",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "8 أحرف على الأقل",
+    "creatingAccount": "جاري إنشاء الحساب...",
+    "accountCreated": "تم إنشاء الحساب! مرحبًا بك في ثلث.",
+    "createFailed": "فشل إنشاء الحساب"
   },
   "settings": {
     "title": "الإعدادات",

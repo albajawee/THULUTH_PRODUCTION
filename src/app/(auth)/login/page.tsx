@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { signIn } from '@/lib/firebase/auth';
@@ -15,6 +16,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
@@ -30,7 +32,7 @@ export default function LoginPage() {
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to sign in';
+      const message = err instanceof Error ? err.message : t('signInFailed');
       toast.error(message);
     } finally {
       setLoading(false);
@@ -43,17 +45,17 @@ export default function LoginPage() {
         <div className="flex justify-center mb-2">
           <span className="text-4xl font-bold tracking-tight">ثلث</span>
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your THULUTH account</CardDescription>
+        <CardTitle className="text-2xl">{t('welcomeBack')}</CardTitle>
+        <CardDescription>{t('loginSubtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('emailPlaceholder')}
               {...register('email')}
             />
             {errors.email && (
@@ -61,7 +63,7 @@ export default function LoginPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input
               id="password"
               type="password"
@@ -73,15 +75,15 @@ export default function LoginPage() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('signingIn') : t('signIn')}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
+          {t('noAccount')}{' '}
           <Link href="/register" className="text-primary hover:underline font-medium">
-            Create one
+            {t('createOne')}
           </Link>
         </p>
       </CardFooter>

@@ -210,7 +210,20 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "signUp": "Sign Up",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "welcomeBack": "Welcome back",
+    "loginSubtitle": "Sign in to your THULUTH account",
+    "signingIn": "Signing in...",
+    "signInFailed": "Failed to sign in",
+    "createOne": "Create one",
+    "createTitle": "Create your account",
+    "createSubtitle": "Start managing your wealth with THULUTH",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Min. 8 characters",
+    "creatingAccount": "Creating account...",
+    "accountCreated": "Account created! Welcome to THULUTH.",
+    "createFailed": "Failed to create account"
   },
   "settings": {
     "title": "Settings",
