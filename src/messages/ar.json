@@ -1,0 +1,125 @@
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "income": "الدخل",
+    "stability": "الاستقرار",
+    "growth": "النمو",
+    "life": "الحياة",
+    "charity": "الصدقة",
+    "goals": "الأهداف",
+    "transfers": "التحويلات",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "totalBalance": "الرصيد الإجمالي",
+    "totalIncome": "إجمالي الدخل",
+    "totalExpenses": "إجمالي المصاريف",
+    "totalSavings": "إجمالي المدخرات",
+    "recentTransactions": "المعاملات الأخيرة",
+    "activeGoals": "الأهداف النشطة",
+    "noTransactions": "لا توجد معاملات بعد",
+    "noGoals": "لا توجد أهداف نشطة"
+  },
+  "funds": {
+    "stability": {
+      "label": "الاستقرار",
+      "description": "الالتزامات المالية والأساسيات"
+    },
+    "growth": {
+      "label": "النمو",
+      "description": "بناء الثروة والأصول المستقبلية"
+    },
+    "life": {
+      "label": "الحياة",
+      "description": "الاستمتاع بالحياة بمسؤولية"
+    },
+    "charity": {
+      "label": "الصدقة",
+      "description": "العطاء والمساهمات الخيرية"
+    },
+    "balance": "الرصيد",
+    "totalReceived": "إجمالي المستلم",
+    "totalSpent": "إجمالي المنفق",
+    "addExpense": "إضافة مصروف"
+  },
+  "income": {
+    "title": "الدخل",
+    "addIncome": "إضافة دخل",
+    "amount": "المبلغ",
+    "source": "المصدر",
+    "date": "التاريخ",
+    "note": "ملاحظة",
+    "distribution": "معاينة التوزيع",
+    "history": "سجل الدخل",
+    "noIncome": "لم يتم تسجيل دخل بعد"
+  },
+  "goals": {
+    "title": "الأهداف",
+    "createGoal": "إنشاء هدف",
+    "goalTitle": "العنوان",
+    "description": "الوصف",
+    "targetAmount": "المبلغ المستهدف",
+    "deadline": "الموعد النهائي",
+    "priority": "الأولوية",
+    "allocate": "تخصيص أموال",
+    "progress": "التقدم",
+    "remaining": "المتبقي",
+    "estimated": "الإتمام المتوقع",
+    "active": "نشط",
+    "completed": "مكتمل",
+    "paused": "متوقف مؤقتًا",
+    "noGoals": "لم يتم إنشاء أهداف بعد"
+  },
+  "transfers": {
+    "title": "التحويلات",
+    "from": "من الصندوق",
+    "to": "إلى الصندوق",
+    "amount": "المبلغ",
+    "reason": "السبب",
+    "transfer": "تحويل",
+    "history": "سجل التحويلات",
+    "noTransfers": "لا توجد تحويلات بعد"
+  },
+  "reports": {
+    "title": "التقارير",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "totalIncome": "إجمالي الدخل",
+    "totalExpenses": "إجمالي المصاريف",
+    "totalSavings": "إجمالي المدخرات",
+    "totalCharity": "إجمالي الصدقات"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "name": "الاسم الكامل",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "signUp": "تسجيل",
+    "signIn": "دخول"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "displayName": "الاسم المعروض",
+    "currency": "العملة",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "save": "حفظ التغييرات"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "confirm": "تأكيد",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ ما",
+    "success": "تم بنجاح"
+  }
+}

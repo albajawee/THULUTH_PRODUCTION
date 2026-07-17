@@ -1,0 +1,125 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "income": "Income",
+    "stability": "Stability",
+    "growth": "Growth",
+    "life": "Life",
+    "charity": "Charity",
+    "goals": "Goals",
+    "transfers": "Transfers",
+    "reports": "Reports",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalBalance": "Total Balance",
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "totalSavings": "Total Savings",
+    "recentTransactions": "Recent Transactions",
+    "activeGoals": "Active Goals",
+    "noTransactions": "No transactions yet",
+    "noGoals": "No active goals"
+  },
+  "funds": {
+    "stability": {
+      "label": "Stability",
+      "description": "Financial obligations & essentials"
+    },
+    "growth": {
+      "label": "Growth",
+      "description": "Building wealth & future assets"
+    },
+    "life": {
+      "label": "Life",
+      "description": "Enjoying life responsibly"
+    },
+    "charity": {
+      "label": "Charity",
+      "description": "Giving & charitable contributions"
+    },
+    "balance": "Balance",
+    "totalReceived": "Total Received",
+    "totalSpent": "Total Spent",
+    "addExpense": "Add Expense"
+  },
+  "income": {
+    "title": "Income",
+    "addIncome": "Add Income",
+    "amount": "Amount",
+    "source": "Source",
+    "date": "Date",
+    "note": "Note",
+    "distribution": "Distribution Preview",
+    "history": "Income History",
+    "noIncome": "No income recorded yet"
+  },
+  "goals": {
+    "title": "Goals",
+    "createGoal": "Create Goal",
+    "goalTitle": "Title",
+    "description": "Description",
+    "targetAmount": "Target Amount",
+    "deadline": "Deadline",
+    "priority": "Priority",
+    "allocate": "Allocate Funds",
+    "progress": "Progress",
+    "remaining": "Remaining",
+    "estimated": "Est. Completion",
+    "active": "Active",
+    "completed": "Completed",
+    "paused": "Paused",
+    "noGoals": "No goals created yet"
+  },
+  "transfers": {
+    "title": "Transfers",
+    "from": "From Fund",
+    "to": "To Fund",
+    "amount": "Amount",
+    "reason": "Reason",
+    "transfer": "Transfer",
+    "history": "Transfer History",
+    "noTransfers": "No transfers yet"
+  },
+  "reports": {
+    "title": "Reports",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "totalSavings": "Total Savings",
+    "totalCharity": "Total Charity"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full Name",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "displayName": "Display Name",
+    "currency": "Currency",
+    "language": "Language",
+    "theme": "Theme",
+    "save": "Save Changes"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success"
+  }
+}

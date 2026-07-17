@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # Build needs Firebase env vars: firebase/admin.ts initializes at module load,
+      # and next build imports it while collecting page data.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+
+  i18n-parity:
+    # Bilingual EN/AR is a product commitment (SAAS_PLAN.md §7). A missing key ships as a raw
+    # identifier to users, so drift is a release blocker, not a warning.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare en.json / ar.json key sets
+        run: |
+          node -e "
+          const fs = require('fs');
+          const flat = (o, p = '') => Object.entries(o).flatMap(([k, v]) =>
+            v && typeof v === 'object' && !Array.isArray(v)
+              ? flat(v, p + k + '.')
+              : [p + k]
+          );
+          const en = flat(JSON.parse(fs.readFileSync('src/messages/en.json', 'utf8')));
+          const ar = flat(JSON.parse(fs.readFileSync('src/messages/ar.json', 'utf8')));
+          const missingAr = en.filter(k => !ar.includes(k));
+          const missingEn = ar.filter(k => !en.includes(k));
+          if (missingAr.length) console.error('Missing in ar.json:', missingAr);
+          if (missingEn.length) console.error('Missing in en.json:', missingEn);
+          if (missingAr.length || missingEn.length) process.exit(1);
+          console.log('i18n parity OK -', en.length, 'keys in both');
+          "

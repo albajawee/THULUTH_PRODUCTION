@@ -1,0 +1,75 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { TrendingUp, TrendingDown, DollarSign, PiggyBank } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils/formatters';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
+
+interface SummaryBarProps {
+  totalBalance: number;
+  totalReceived: number;
+  totalSpent: number;
+}
+
+export function SummaryBar({ totalBalance, totalReceived, totalSpent }: SummaryBarProps) {
+  const { currency } = useUserSettings();
+  const totalSavings = totalBalance;
+  const items = [
+    {
+      label: 'Total Balance',
+      value: totalBalance,
+      icon: DollarSign,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+    },
+    {
+      label: 'Total Income',
+      value: totalReceived,
+      icon: TrendingUp,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+    },
+    {
+      label: 'Total Expenses',
+      value: totalSpent,
+      icon: TrendingDown,
+      color: 'text-rose-400',
+      bg: 'bg-rose-500/10',
+    },
+    {
+      label: 'Net Savings',
+      value: totalSavings,
+      icon: PiggyBank,
+      color: 'text-violet-400',
+      bg: 'bg-violet-500/10',
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {items.map((item, i) => (
+        <motion.div
+          key={item.label}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.08 }}
+        >
+          <Card>
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${item.bg}`}>
+                  <item.icon className={`h-4 w-4 ${item.color}`} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <p className="text-lg font-bold">{formatCurrency(item.value, currency)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
