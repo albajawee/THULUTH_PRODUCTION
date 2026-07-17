@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Transaction } from '@/lib/types';
 import { FUND_CONFIG } from '@/lib/constants/fund-config';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
@@ -26,15 +27,17 @@ function getTransactionColor(type: Transaction['type']) {
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('dashboard');
+  const tf = useTranslations('nav');
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Recent Transactions</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('recentTransactions')}</CardTitle>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            No transactions yet. Add income to get started.
+            {t('noTransactions')}
           </p>
         ) : (
           <div className="space-y-3">
@@ -52,7 +55,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {fundConfig.label} · {formatDate(tx.createdAt)}
+                      {tf(tx.fundType)} · {formatDate(tx.createdAt)}
                     </p>
                   </div>
                   <span className={cn('text-sm font-semibold tabular-nums', color)}>

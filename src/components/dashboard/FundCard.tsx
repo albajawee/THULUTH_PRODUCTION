@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Fund, FundType } from '@/lib/types';
 import { FUND_CONFIG } from '@/lib/constants/fund-config';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -17,6 +18,8 @@ interface FundCardProps {
 
 export function FundCard({ fund, index = 0 }: FundCardProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('dashboard');
+  const tf = useTranslations('nav');
   const config = FUND_CONFIG[fund.id as FundType];
   const Icon = config.icon;
   const progressPct = fund.totalReceived > 0
@@ -47,7 +50,7 @@ export function FundCard({ fund, index = 0 }: FundCardProps) {
               </div>
             </div>
             <CardTitle className="text-sm font-medium text-muted-foreground mt-1">
-              {config.label}
+              {tf(fund.id)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -63,8 +66,8 @@ export function FundCard({ fund, index = 0 }: FundCardProps) {
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Received: {formatCurrency(fund.totalReceived, currency)}</span>
-                <span>Spent: {formatCurrency(fund.totalSpent, currency)}</span>
+                <span>{t('received')}: {formatCurrency(fund.totalReceived, currency)}</span>
+                <span>{t('spent')}: {formatCurrency(fund.totalSpent, currency)}</span>
               </div>
             </div>
           </CardContent>

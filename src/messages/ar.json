@@ -18,14 +18,24 @@
   },
   "dashboard": {
     "title": "لوحة التحكم",
+    "welcome": "مرحبًا بعودتك",
     "totalBalance": "الرصيد الإجمالي",
     "totalIncome": "إجمالي الدخل",
     "totalExpenses": "إجمالي المصاريف",
     "totalSavings": "إجمالي المدخرات",
+    "netSavings": "صافي المدخرات",
+    "received": "المستلم",
+    "spent": "المنفق",
+    "overview6m": "نظرة عامة لـ 6 أشهر",
+    "income": "الدخل",
+    "expenses": "المصاريف",
     "recentTransactions": "المعاملات الأخيرة",
     "activeGoals": "الأهداف النشطة",
-    "noTransactions": "لا توجد معاملات بعد",
-    "noGoals": "لا توجد أهداف نشطة"
+    "viewAll": "عرض الكل",
+    "complete": "مكتمل",
+    "left": "متبقٍ",
+    "noTransactions": "لا توجد معاملات بعد. أضف دخلاً للبدء.",
+    "noGoals": "لا توجد أهداف نشطة. أنشئ هدفًا لبدء التتبع."
   },
   "funds": {
     "stability": {
@@ -75,6 +85,9 @@
     "active": "نشط",
     "completed": "مكتمل",
     "paused": "متوقف مؤقتًا",
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة",
     "noGoals": "لم يتم إنشاء أهداف بعد"
   },
   "transfers": {

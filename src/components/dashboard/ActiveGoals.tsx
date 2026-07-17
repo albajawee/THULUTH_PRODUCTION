@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Goal } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { calcGoalProgress } from '@/lib/utils/calculations';
@@ -24,23 +25,25 @@ const PRIORITY_COLORS = {
 
 export function ActiveGoals({ goals, fundBalances }: ActiveGoalsProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('dashboard');
+  const tg = useTranslations('goals');
   const displayed = goals.slice(0, 3);
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-semibold">Active Goals</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('activeGoals')}</CardTitle>
         <Link
           href="/goals"
           className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
         >
-          View all <ArrowRight className="h-3 w-3" />
+          {t('viewAll')} <ArrowRight className="h-3 w-3" />
         </Link>
       </CardHeader>
       <CardContent>
         {displayed.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            No active goals. Create one to start tracking.
+            {t('noGoals')}
           </p>
         ) : (
           <div className="space-y-4">
@@ -65,13 +68,13 @@ export function ActiveGoals({ goals, fundBalances }: ActiveGoalsProps) {
                         variant="secondary"
                         className={cn('text-xs', PRIORITY_COLORS[goal.priority])}
                       >
-                        {goal.priority}
+                        {tg(goal.priority)}
                       </Badge>
                     </div>
                     <Progress value={percentage} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{percentage}% complete</span>
-                      <span>{formatCurrency(remaining, currency)} left</span>
+                      <span>{percentage}% {t('complete')}</span>
+                      <span>{formatCurrency(remaining, currency)} {t('left')}</span>
                     </div>
                   </div>
                 </Link>

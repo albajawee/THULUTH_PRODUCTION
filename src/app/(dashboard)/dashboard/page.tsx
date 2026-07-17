@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useTransactions } from '@/lib/hooks/useTransactions';
@@ -16,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const t = useTranslations('dashboard');
   const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent } = useFunds(user?.uid ?? null);
   const { transactions, loading: txLoading } = useTransactions(user?.uid ?? null, 10);
   const { activeGoals } = useGoals(user?.uid ?? null);
@@ -42,9 +44,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground text-sm">
-          Welcome back{user?.displayName ? `, ${user.displayName}` : ''}
+          {t('welcome')}{user?.displayName ? `, ${user.displayName}` : ''}
         </p>
       </div>
 

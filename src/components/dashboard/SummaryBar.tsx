@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { TrendingUp, TrendingDown, DollarSign, PiggyBank } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -14,36 +15,13 @@ interface SummaryBarProps {
 
 export function SummaryBar({ totalBalance, totalReceived, totalSpent }: SummaryBarProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('dashboard');
   const totalSavings = totalBalance;
   const items = [
-    {
-      label: 'Total Balance',
-      value: totalBalance,
-      icon: DollarSign,
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-    },
-    {
-      label: 'Total Income',
-      value: totalReceived,
-      icon: TrendingUp,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-    },
-    {
-      label: 'Total Expenses',
-      value: totalSpent,
-      icon: TrendingDown,
-      color: 'text-rose-400',
-      bg: 'bg-rose-500/10',
-    },
-    {
-      label: 'Net Savings',
-      value: totalSavings,
-      icon: PiggyBank,
-      color: 'text-violet-400',
-      bg: 'bg-violet-500/10',
-    },
+    { label: t('totalBalance'), value: totalBalance, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { label: t('totalIncome'), value: totalReceived, icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: t('totalExpenses'), value: totalSpent, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { label: t('netSavings'), value: totalSavings, icon: PiggyBank, color: 'text-violet-400', bg: 'bg-violet-500/10' },
   ];
 
   return (

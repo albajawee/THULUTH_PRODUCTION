@@ -10,11 +10,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { Income, Expense } from '@/lib/types';
-import { format, startOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
+import { format, eachMonthOfInterval, subMonths } from 'date-fns';
 
 interface MonthlyChartProps {
   incomes: Income[];
@@ -23,6 +24,7 @@ interface MonthlyChartProps {
 
 export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('dashboard');
   const now = new Date();
   const months = eachMonthOfInterval({
     start: subMonths(now, 5),
@@ -48,7 +50,7 @@ export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">6-Month Overview</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('overview6m')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>
@@ -87,7 +89,7 @@ export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
             <Area
               type="monotone"
               dataKey="income"
-              name="Income"
+              name={t('income')}
               stroke="#34d399"
               fill="url(#incomeGrad)"
               strokeWidth={2}
@@ -95,7 +97,7 @@ export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
             <Area
               type="monotone"
               dataKey="expenses"
-              name="Expenses"
+              name={t('expenses')}
               stroke="#f87171"
               fill="url(#expGrad)"
               strokeWidth={2}
