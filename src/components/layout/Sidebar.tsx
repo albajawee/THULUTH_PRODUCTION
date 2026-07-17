@@ -30,7 +30,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 min-h-screen bg-card border-r border-border/50 p-4">
+    <aside className="hidden md:flex print:hidden flex-col w-64 min-h-screen bg-card border-r border-border/50 p-4">
       <div className="mb-8 px-2">
         <Link href="/dashboard" className="flex items-center gap-3">
           <span className="text-2xl font-bold">ثلث</span>

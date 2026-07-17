@@ -42,7 +42,7 @@ export function TopBar() {
     .slice(0, 2) ?? 'U';
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/50 bg-background/95 backdrop-blur px-4 md:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/50 bg-background/95 backdrop-blur px-4 md:px-6 print:hidden">
       <div className="flex items-center gap-2 md:hidden">
         <span className="text-lg font-bold">ثلث</span>
         <span className="text-sm font-semibold text-muted-foreground">THULUTH</span>

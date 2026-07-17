@@ -127,3 +127,38 @@
     @apply font-sans;
   }
 }
+
+/*
+ * Print / Save-as-PDF. The Reports page drives this via window.print(); app chrome carries
+ * `print:hidden`. Here we set the page up so a report prints on white with no clipped content
+ * and cards don't split across page breaks.
+ */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  /* Force light ink-on-paper regardless of the on-screen dark theme. */
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+  /* The dashboard main scrolls on screen; let it flow naturally for print. */
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  /* Keep each card intact on a single page where possible. */
+  [data-slot='card'] {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+  /* Recharts and bars can be laid out edge-to-edge on paper. */
+  .print\:hidden {
+    display: none !important;
+  }
+}
