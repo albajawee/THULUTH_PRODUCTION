@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { X, Plus } from 'lucide-react';
 import { FundType } from '@/lib/types';
@@ -20,15 +21,13 @@ import { cn } from '@/lib/utils';
  */
 export function CategoryManager() {
   const { categories } = useUserSettings();
+  const t = useTranslations('settings');
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Expense Categories</CardTitle>
-        <p className="text-xs text-muted-foreground">
-          Customise the categories offered when you add an expense to each fund. Removing one here
-          never changes expenses you already recorded with it.
-        </p>
+        <CardTitle className="text-base">{t('categories')}</CardTitle>
+        <p className="text-xs text-muted-foreground">{t('categoriesDesc')}</p>
       </CardHeader>
       <CardContent className="space-y-5">
         {FUND_ORDER.map((fund) => (
@@ -42,6 +41,8 @@ export function CategoryManager() {
 function FundCategories({ fund, current }: { fund: FundType; current: string[] }) {
   const config = FUND_CONFIG[fund];
   const Icon = config.icon;
+  const t = useTranslations('settings');
+  const tf = useTranslations('nav');
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -49,9 +50,9 @@ function FundCategories({ fund, current }: { fund: FundType; current: string[] }
     setSaving(true);
     try {
       const res = await updateFundCategories({ fundType: fund, categories: next });
-      if (!res.success) toast.error(res.error ?? 'Could not save categories');
+      if (!res.success) toast.error(res.error ?? t('categorySaveFailed'));
     } catch {
-      toast.error('Could not save categories');
+      toast.error(t('categorySaveFailed'));
     } finally {
       setSaving(false);
     }
@@ -61,7 +62,7 @@ function FundCategories({ fund, current }: { fund: FundType; current: string[] }
     const name = draft.trim();
     if (!name) return;
     if (current.some((c) => c.toLowerCase() === name.toLowerCase())) {
-      toast.error(`"${name}" already exists in ${config.label}`);
+      toast.error(t('categoryExists', { name, fund: tf(fund) }));
       return;
     }
     setDraft('');
@@ -76,7 +77,7 @@ function FundCategories({ fund, current }: { fund: FundType; current: string[] }
     <div>
       <div className="mb-2 flex items-center gap-2">
         <Icon className={cn('h-4 w-4', config.color)} />
-        <span className="text-sm font-medium">{config.label}</span>
+        <span className="text-sm font-medium">{tf(fund)}</span>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -98,7 +99,7 @@ function FundCategories({ fund, current }: { fund: FundType; current: string[] }
           </span>
         ))}
         {current.length === 0 && (
-          <span className="text-xs text-muted-foreground">No categories — add one below.</span>
+          <span className="text-xs text-muted-foreground">{t('noCategories')}</span>
         )}
       </div>
 
@@ -107,13 +108,13 @@ function FundCategories({ fund, current }: { fund: FundType; current: string[] }
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
-          placeholder={`Add a ${config.label} category…`}
+          placeholder={t('addCategoryPlaceholder')}
           maxLength={40}
           className="h-9"
         />
         <Button type="button" size="sm" variant="outline" disabled={saving || !draft.trim()} onClick={add}>
           <Plus className="mr-1 h-4 w-4" />
-          Add
+          {t('add')}
         </Button>
       </div>
     </div>

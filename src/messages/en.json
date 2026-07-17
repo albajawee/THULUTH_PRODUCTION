@@ -70,7 +70,10 @@
     "deleteExpenseDesc": "This returns {amount} to the {fund} fund. The ledger keeps a record of both the original expense and the reversal.",
     "deleteExpense": "Delete expense",
     "expenseRefunded": "Refunded {amount} to the fund",
-    "expenseDeleteFailed": "Could not delete the expense"
+    "expenseDeleteFailed": "Could not delete the expense",
+    "quickAddTitle": "Quick add expense",
+    "quickAddButton": "Add expense",
+    "quickAddFailed": "Could not save that expense"
   },
   "income": {
     "title": "Income",
@@ -245,7 +248,9 @@
     "categoriesDesc": "Customise the categories offered when you add an expense to each fund. Removing one never changes expenses you already recorded.",
     "addCategoryPlaceholder": "Add a category…",
     "noCategories": "No categories — add one below.",
-    "add": "Add"
+    "add": "Add",
+    "categoryExists": "\"{name}\" already exists in {fund}",
+    "categorySaveFailed": "Could not save categories"
   },
   "common": {
     "save": "Save",

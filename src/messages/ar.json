@@ -70,7 +70,10 @@
     "deleteExpenseDesc": "سيعيد هذا {amount} إلى صندوق {fund}. يحتفظ السجل بقيد للمصروف الأصلي وللعكس معًا.",
     "deleteExpense": "حذف المصروف",
     "expenseRefunded": "تمت إعادة {amount} إلى الصندوق",
-    "expenseDeleteFailed": "تعذّر حذف المصروف"
+    "expenseDeleteFailed": "تعذّر حذف المصروف",
+    "quickAddTitle": "إضافة سريعة لمصروف",
+    "quickAddButton": "إضافة مصروف",
+    "quickAddFailed": "تعذّر حفظ هذا المصروف"
   },
   "income": {
     "title": "الدخل",
@@ -245,7 +248,9 @@
     "categoriesDesc": "خصّص الفئات المتاحة عند إضافة مصروف لكل صندوق. حذف فئة لا يغيّر المصاريف التي سجّلتها بها.",
     "addCategoryPlaceholder": "أضف فئة…",
     "noCategories": "لا توجد فئات — أضف واحدة أدناه.",
-    "add": "إضافة"
+    "add": "إضافة",
+    "categoryExists": "\"{name}\" موجودة بالفعل في {fund}",
+    "categorySaveFailed": "تعذّر حفظ الفئات"
   },
   "common": {
     "save": "حفظ",

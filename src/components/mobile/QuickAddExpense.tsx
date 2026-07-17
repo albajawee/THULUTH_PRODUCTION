@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { addExpense } from '@/lib/services/expense.service';
 import { FUND_ORDER, FUND_CONFIG } from '@/lib/constants/fund-config';
@@ -27,6 +28,9 @@ interface QuickAddExpenseProps {
  */
 export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
   const { currency, categories: allCategories } = useUserSettings();
+  const t = useTranslations('funds');
+  const tc = useTranslations('common');
+  const tf = useTranslations('nav');
   const [fund, setFund] = useState<FundType>('life');
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
@@ -64,10 +68,10 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
         reset();
         onOpenChange(false);
       } else {
-        toast.error('Could not save that expense');
+        toast.error(t('quickAddFailed'));
       }
     } catch {
-      toast.error('Could not save that expense');
+      toast.error(t('quickAddFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -80,7 +84,7 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
         className="rounded-t-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
       >
         <SheetHeader className="pb-0">
-          <SheetTitle>Quick add expense</SheetTitle>
+          <SheetTitle>{t('quickAddTitle')}</SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col gap-5 px-4 pb-2">
@@ -98,7 +102,7 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
                 if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v);
               }}
               className="w-40 bg-transparent text-center text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/40"
-              aria-label="Amount"
+              aria-label={tc('amount')}
             />
           </div>
 
@@ -122,7 +126,7 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
                   )}
                 >
                   <Icon className={cn('h-4 w-4 shrink-0', config.color)} />
-                  {config.label}
+                  {tf(fundId)}
                 </button>
               );
             })}
@@ -156,7 +160,7 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
             disabled={!canSubmit}
             onClick={handleSubmit}
           >
-            {submitting ? 'Saving…' : 'Add expense'}
+            {submitting ? tc('saving') : t('quickAddButton')}
           </Button>
         </div>
       </SheetContent>
