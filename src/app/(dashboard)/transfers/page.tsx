@@ -7,11 +7,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { createTransferSchema, CreateTransferInput } from '@/lib/utils/validators';
-import { transferFunds } from '@/lib/services/transfer.service';
+import { transferFunds, reverseTransfer } from '@/lib/services/transfer.service';
 import { FUND_ORDER, FUND_CONFIG } from '@/lib/constants/fund-config';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 import { FundType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Undo2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -56,6 +58,15 @@ export default function TransfersPage() {
     } else {
       const msg = result.error?.amount?.[0] ?? result.error?.toFund?.[0] ?? 'Transfer failed';
       toast.error(msg);
+    }
+  }
+
+  async function handleUndo(transferId: string) {
+    const result = await reverseTransfer({ transferId });
+    if (result.success) {
+      toast.success('Transfer undone');
+    } else {
+      toast.error(result.error ?? 'Could not undo the transfer');
     }
   }
 
@@ -165,6 +176,23 @@ export default function TransfersPage() {
                         <ToIcon className={cn('h-3.5 w-3.5', to.color)} />
                         <span className={to.color}>{to.label}</span>
                         <span className="ml-auto font-semibold">{formatCurrency(t.amount, currency)}</span>
+                        <ConfirmDialog
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label="Undo transfer"
+                            >
+                              <Undo2 className="h-4 w-4" />
+                            </Button>
+                          }
+                          title="Undo this transfer?"
+                          description={`This moves ${formatCurrency(t.amount, currency)} back from ${to.label} to ${from.label}. Both funds are restored and the ledger records the reversal.`}
+                          confirmLabel="Undo transfer"
+                          destructive
+                          onConfirm={() => handleUndo(t.id)}
+                        />
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">{t.reason}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(t.createdAt)}</p>
