@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Goal } from '@/lib/types';
 import { calcGoalProgress } from '@/lib/utils/calculations';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
@@ -23,11 +24,11 @@ const STATUS_COLORS = {
   paused: 'text-muted-foreground bg-muted',
 };
 
-const FUND_LABELS: Record<string, string> = {
-  stability: '🏠 Stability',
-  growth: '📈 Growth',
-  life: '✨ Life',
-  charity: '🤲 Charity',
+const FUND_EMOJI: Record<string, string> = {
+  stability: '🏠',
+  growth: '📈',
+  life: '✨',
+  charity: '🤲',
 };
 
 interface GoalCardProps {
@@ -37,6 +38,8 @@ interface GoalCardProps {
 
 export function GoalCard({ goal, fundBalance }: GoalCardProps) {
   const { currency } = useUserSettings();
+  const t = useTranslations('goals');
+  const tf = useTranslations('nav');
   const { percentage, remaining } = calcGoalProgress(
     goal.targetAmount,
     fundBalance,
@@ -54,10 +57,10 @@ export function GoalCard({ goal, fundBalance }: GoalCardProps) {
             </div>
             <div className="flex gap-1.5 shrink-0">
               <Badge variant="secondary" className={cn('text-xs', STATUS_COLORS[goal.status])}>
-                {goal.status}
+                {t(goal.status)}
               </Badge>
               <Badge variant="secondary" className={cn('text-xs', PRIORITY_COLORS[goal.priority])}>
-                {goal.priority}
+                {t(goal.priority)}
               </Badge>
             </div>
           </div>
@@ -72,7 +75,7 @@ export function GoalCard({ goal, fundBalance }: GoalCardProps) {
             <span className="font-semibold text-emerald-400">{percentage}%</span>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-medium">{FUND_LABELS[goal.fundType] ?? goal.fundType}</span>
+            <span className="font-medium">{FUND_EMOJI[goal.fundType]} {tf(goal.fundType)}</span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               {formatDate(goal.deadline)}

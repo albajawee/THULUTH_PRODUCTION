@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useFunds } from '@/lib/hooks/useFunds';
@@ -19,6 +20,7 @@ export default function GoalsPage() {
   const { goals, activeGoals, completedGoals, loading } = useGoals(user?.uid ?? null);
   const { funds } = useFunds(user?.uid ?? null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const t = useTranslations('goals');
 
   function getFundBalance(fundType: FundType): number {
     return funds?.[fundType]?.balance ?? 0;
@@ -28,21 +30,21 @@ export default function GoalsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Goals</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <p className="text-muted-foreground text-sm">
-            {activeGoals.length} active · {completedGoals.length} completed
+            {t('summary', { active: activeGoals.length, completed: completedGoals.length })}
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Goal
+          {t('newGoal')}
         </Button>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create a New Goal</DialogTitle>
+            <DialogTitle>{t('createNewGoal')}</DialogTitle>
           </DialogHeader>
           <GoalForm onSuccess={() => setDialogOpen(false)} />
         </DialogContent>
@@ -50,8 +52,8 @@ export default function GoalsPage() {
 
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active ({activeGoals.length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({completedGoals.length})</TabsTrigger>
+          <TabsTrigger value="active">{t('active')} ({activeGoals.length})</TabsTrigger>
+          <TabsTrigger value="completed">{t('completed')} ({completedGoals.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="mt-4">
@@ -65,7 +67,7 @@ export default function GoalsPage() {
             <Card>
               <CardContent className="text-center py-12">
                 <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No active goals. Create your first goal to start tracking.</p>
+                <p className="text-muted-foreground">{t('noActiveGoals')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -85,7 +87,7 @@ export default function GoalsPage() {
           {completedGoals.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <p className="text-muted-foreground">No completed goals yet.</p>
+                <p className="text-muted-foreground">{t('noCompletedGoals')}</p>
               </CardContent>
             </Card>
           ) : (

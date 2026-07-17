@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
@@ -29,11 +30,11 @@ const STATUS_COLORS: Record<string, string> = {
   paused: 'text-muted-foreground bg-muted',
 };
 
-const FUND_LABELS: Record<string, string> = {
-  stability: '🏠 Stability Fund',
-  growth: '📈 Growth Fund',
-  life: '✨ Life Fund',
-  charity: '🤲 Charity Fund',
+const FUND_EMOJI: Record<string, string> = {
+  stability: '🏠',
+  growth: '📈',
+  life: '✨',
+  charity: '🤲',
 };
 
 export default function GoalDetailPage() {
@@ -41,6 +42,8 @@ export default function GoalDetailPage() {
   const { user } = useAuth();
   const { funds } = useFunds(user?.uid ?? null);
   const { currency } = useUserSettings();
+  const t = useTranslations('goals');
+  const tf = useTranslations('nav');
   const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +56,7 @@ export default function GoalDetailPage() {
   }, [user, id]);
 
   if (loading) return <Skeleton className="h-64 rounded-xl w-full" />;
-  if (!goal) return <p className="text-muted-foreground">Goal not found.</p>;
+  if (!goal) return <p className="text-muted-foreground">{t('notFound')}</p>;
 
   const fundBalance = funds?.[goal.fundType]?.balance ?? 0;
   const { percentage, remaining } = calcGoalProgress(
@@ -72,11 +75,11 @@ export default function GoalDetailPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold">{goal.title}</h1>
-            <Badge variant="secondary" className={cn('capitalize', STATUS_COLORS[goal.status])}>
-              {goal.status}
+            <Badge variant="secondary" className={cn(STATUS_COLORS[goal.status])}>
+              {t(goal.status)}
             </Badge>
-            <Badge variant="secondary" className={cn('capitalize', PRIORITY_COLORS[goal.priority])}>
-              {goal.priority} priority
+            <Badge variant="secondary" className={cn(PRIORITY_COLORS[goal.priority])}>
+              {t('priorityLabel', { level: t(goal.priority) })}
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-1">{goal.description}</p>
@@ -88,15 +91,15 @@ export default function GoalDetailPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Wallet className="h-4 w-4 text-emerald-400" />
-            Progress via {FUND_LABELS[goal.fundType] ?? goal.fundType}
+            {t('progressVia', { fund: `${FUND_EMOJI[goal.fundType]} ${tf(goal.fundType)}` })}
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Progress is calculated dynamically from the fund&apos;s current balance. No money is locked or transferred to this goal.
+            {t('progressNote')}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Progress</span>
+            <span className="text-sm text-muted-foreground">{t('progress')}</span>
             <span className={cn('text-sm font-bold', percentage >= 100 ? 'text-violet-400' : 'text-emerald-400')}>
               {percentage}%
             </span>
@@ -104,23 +107,23 @@ export default function GoalDetailPage() {
           <Progress value={percentage} className="h-3" />
           <div className="grid grid-cols-3 gap-4 pt-2">
             <div>
-              <p className="text-xs text-muted-foreground">Target</p>
+              <p className="text-xs text-muted-foreground">{t('target')}</p>
               <p className="font-bold">{formatCurrency(goal.targetAmount, currency)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Fund Balance</p>
+              <p className="text-xs text-muted-foreground">{t('fundBalance')}</p>
               <p className="font-bold text-emerald-400">{formatCurrency(fundBalance, currency)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Still Needed</p>
+              <p className="text-xs text-muted-foreground">{t('stillNeeded')}</p>
               <p className={cn('font-bold', remaining === 0 ? 'text-violet-400' : 'text-rose-400')}>
-                {remaining === 0 ? 'Reached! 🎉' : formatCurrency(remaining, currency)}
+                {remaining === 0 ? t('reached') : formatCurrency(remaining, currency)}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
             <Calendar className="h-3 w-3" />
-            <span>Deadline: {formatDate(goal.deadline)}</span>
+            <span>{t('deadline')}: {formatDate(goal.deadline)}</span>
           </div>
         </CardContent>
       </Card>

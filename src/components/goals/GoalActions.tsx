@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { CheckCircle2, RotateCcw, Trash2 } from 'lucide-react';
 import { Goal } from '@/lib/types';
@@ -15,6 +16,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
  */
 export function GoalActions({ goal }: { goal: Goal }) {
   const router = useRouter();
+  const t = useTranslations('goals');
+  const tc = useTranslations('common');
   const [pending, setPending] = useState(false);
 
   async function changeStatus(status: 'completed' | 'active') {
@@ -22,13 +25,13 @@ export function GoalActions({ goal }: { goal: Goal }) {
     try {
       const result = await setGoalStatus({ goalId: goal.id, status });
       if (result.success) {
-        toast.success(status === 'completed' ? 'Goal marked as achieved 🎉' : 'Goal reopened');
+        toast.success(status === 'completed' ? t('achievedToast') : t('reopenedToast'));
         router.refresh();
       } else {
-        toast.error(result.error ?? 'Could not update the goal');
+        toast.error(result.error ?? t('updateFailedToast'));
       }
     } catch {
-      toast.error('Could not update the goal');
+      toast.error(t('updateFailedToast'));
     } finally {
       setPending(false);
     }
@@ -37,11 +40,11 @@ export function GoalActions({ goal }: { goal: Goal }) {
   async function handleDelete() {
     const result = await deleteGoal({ goalId: goal.id });
     if (result.success) {
-      toast.success('Goal deleted');
+      toast.success(t('deletedToast'));
       router.push('/goals');
       router.refresh();
     } else {
-      toast.error(result.error ?? 'Could not delete the goal');
+      toast.error(result.error ?? t('deleteFailedToast'));
     }
   }
 
@@ -50,12 +53,12 @@ export function GoalActions({ goal }: { goal: Goal }) {
       {goal.status === 'completed' ? (
         <Button variant="outline" disabled={pending} onClick={() => changeStatus('active')}>
           <RotateCcw className="mr-2 h-4 w-4" />
-          Reopen goal
+          {t('reopen')}
         </Button>
       ) : (
         <Button disabled={pending} onClick={() => changeStatus('completed')}>
           <CheckCircle2 className="mr-2 h-4 w-4" />
-          Mark as achieved
+          {t('markAchieved')}
         </Button>
       )}
 
@@ -63,12 +66,12 @@ export function GoalActions({ goal }: { goal: Goal }) {
         trigger={
           <Button variant="ghost" className="text-destructive" disabled={pending}>
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {tc('delete')}
           </Button>
         }
-        title="Delete this goal?"
-        description="This permanently removes the goal. Your funds and their balances are not affected — goals never held money."
-        confirmLabel="Delete goal"
+        title={t('deleteGoalTitle')}
+        description={t('deleteGoalDesc')}
+        confirmLabel={t('deleteGoalConfirm')}
         destructive
         onConfirm={handleDelete}
       />
