@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { addExpense } from '@/lib/services/expense.service';
 import { FUND_ORDER, FUND_CONFIG } from '@/lib/constants/fund-config';
-import { CATEGORIES_BY_FUND } from '@/lib/constants/fund-categories';
 import { toInputDate, groupThousands } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { FundType } from '@/lib/types';
@@ -27,13 +26,13 @@ interface QuickAddExpenseProps {
  * Anything more considered belongs in the full form on the fund page.
  */
 export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
-  const { currency } = useUserSettings();
+  const { currency, categories: allCategories } = useUserSettings();
   const [fund, setFund] = useState<FundType>('life');
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const categories = CATEGORIES_BY_FUND[fund] ?? [];
+  const categories = allCategories[fund] ?? [];
   const numericAmount = Number(amount);
   const canSubmit = numericAmount > 0 && category !== '' && !submitting;
 
@@ -52,17 +51,16 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const label = categories.find((c) => c.value === category)?.label ?? 'Expense';
       const result = await addExpense({
         fundType: fund,
         category,
         amount: numericAmount,
-        description: label,
+        description: category, // category is the label; keeps quick-add to a single tap
         date: toInputDate(),
       });
 
       if (result.success) {
-        toast.success(`${label} · ${numericAmount.toLocaleString()} ${currency}`);
+        toast.success(`${category} · ${numericAmount.toLocaleString()} ${currency}`);
         reset();
         onOpenChange(false);
       } else {
@@ -133,12 +131,12 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
           {/* Category chips */}
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => {
-              const active = category === cat.value;
+              const active = category === cat;
               return (
                 <button
-                  key={cat.value}
+                  key={cat}
                   type="button"
-                  onClick={() => setCategory(cat.value)}
+                  onClick={() => setCategory(cat)}
                   aria-pressed={active}
                   className={cn(
                     'min-h-9 rounded-full border px-3.5 py-1.5 text-sm transition-colors',
@@ -147,7 +145,7 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
                       : 'border-border/60 text-muted-foreground hover:bg-muted'
                   )}
                 >
-                  {cat.label}
+                  {cat}
                 </button>
               );
             })}

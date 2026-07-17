@@ -24,6 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CategoryManager } from '@/components/settings/CategoryManager';
 
 const CURRENCIES = [
   { value: 'AED', label: 'UAE Dirham (AED)' },
@@ -200,6 +201,8 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      <CategoryManager />
     </div>
   );
 }

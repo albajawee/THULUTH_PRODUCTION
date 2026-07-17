@@ -1,63 +1,29 @@
-export type StabilityCategory =
-  | 'rent'
-  | 'loans'
-  | 'utilities'
-  | 'internet'
-  | 'transportation'
-  | 'food'
-  | 'other';
-
-export type LifeCategory =
-  | 'travel'
-  | 'restaurants'
-  | 'clothing'
-  | 'entertainment'
-  | 'gifts'
-  | 'other';
-
-export type GrowthCategory =
-  | 'real_estate'
-  | 'business'
-  | 'education'
-  | 'investments'
-  | 'retirement'
-  | 'other';
-
-export const STABILITY_CATEGORIES: { value: StabilityCategory; label: string }[] = [
-  { value: 'rent', label: 'Rent' },
-  { value: 'loans', label: 'Loans' },
-  { value: 'utilities', label: 'Utilities' },
-  { value: 'internet', label: 'Internet' },
-  { value: 'transportation', label: 'Transportation' },
-  { value: 'food', label: 'Food' },
-  { value: 'other', label: 'Other' },
-];
-
-export const LIFE_CATEGORIES: { value: LifeCategory; label: string }[] = [
-  { value: 'travel', label: 'Travel' },
-  { value: 'restaurants', label: 'Restaurants' },
-  { value: 'clothing', label: 'Clothing' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'gifts', label: 'Gifts' },
-  { value: 'other', label: 'Other' },
-];
-
-export const GROWTH_CATEGORIES: { value: GrowthCategory; label: string }[] = [
-  { value: 'real_estate', label: 'Real Estate' },
-  { value: 'business', label: 'Business' },
-  { value: 'education', label: 'Education' },
-  { value: 'investments', label: 'Investments' },
-  { value: 'retirement', label: 'Retirement' },
-  { value: 'other', label: 'Other' },
-];
+import { FundType } from '../types';
 
 /**
- * Categories per fund. Charity has no category taxonomy of its own — giving is tracked as
- * donations (see DonationForm), so a charity-fund expense is just "General".
+ * Categories are user-managed freeform strings, edited per fund in Settings. These are only the
+ * seed defaults used to bootstrap a new account and as a fallback for accounts that haven't
+ * customised a given fund yet. They are intentionally plain strings — a category IS its label, and
+ * the label is what gets stored on each expense, so deleting a category later never affects the
+ * expenses that already used it.
  */
-export const CATEGORIES_BY_FUND: Record<string, { value: string; label: string }[]> = {
-  stability: STABILITY_CATEGORIES,
-  life: LIFE_CATEGORIES,
-  growth: GROWTH_CATEGORIES,
-  charity: [{ value: 'other', label: 'General' }],
+export const DEFAULT_CATEGORIES_BY_FUND: Record<FundType, string[]> = {
+  stability: ['Rent', 'Loans', 'Utilities', 'Internet', 'Transportation', 'Food'],
+  growth: ['Real Estate', 'Business', 'Education', 'Investments', 'Retirement'],
+  life: ['Travel', 'Restaurants', 'Clothing', 'Entertainment', 'Gifts'],
+  charity: ['Zakat', 'Sadaqah', 'General'],
 };
+
+/**
+ * The categories to show for a fund: the user's own list when they've set one, otherwise the
+ * defaults. Never returns an empty array for a known fund, so the expense pickers always have
+ * something to show.
+ */
+export function categoriesForFund(
+  userCategories: Partial<Record<FundType, string[]>> | undefined,
+  fund: FundType
+): string[] {
+  const custom = userCategories?.[fund];
+  if (custom && custom.length > 0) return custom;
+  return DEFAULT_CATEGORIES_BY_FUND[fund];
+}

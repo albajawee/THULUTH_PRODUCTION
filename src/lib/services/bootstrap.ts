@@ -1,6 +1,7 @@
 import 'server-only';
 import { adminDb } from '../firebase/admin';
 import { FundType, UserProfile } from '../types';
+import { DEFAULT_CATEGORIES_BY_FUND } from '../constants/fund-categories';
 
 /**
  * User/fund bootstrap.
@@ -72,6 +73,7 @@ export async function ensureUserBootstrapped(
       email: details.email ?? '',
       selectedCurrency: 'SAR',
       selectedLanguage: 'en',
+      categories: DEFAULT_CATEGORIES_BY_FUND,
       createdAt: now,
       updatedAt: now,
     } satisfies UserProfile);

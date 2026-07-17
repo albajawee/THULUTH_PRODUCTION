@@ -1,7 +1,7 @@
 import { FundType } from './fund.types';
-import { StabilityCategory, LifeCategory, GrowthCategory } from '../constants/fund-categories';
 
-export type ExpenseCategory = StabilityCategory | LifeCategory | GrowthCategory | 'other';
+/** Categories are user-managed freeform strings (see constants/fund-categories.ts). */
+export type ExpenseCategory = string;
 
 export interface Expense {
   id: string;

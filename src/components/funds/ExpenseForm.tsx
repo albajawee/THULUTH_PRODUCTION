@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import { addExpenseSchema, AddExpenseInput } from '@/lib/utils/validators';
 import { addExpense } from '@/lib/services/expense.service';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { FundType } from '@/lib/types';
-import { CATEGORIES_BY_FUND } from '@/lib/constants/fund-categories';
 import { toInputDate } from '@/lib/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ interface ExpenseFormProps {
 
 export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
   const { user } = useAuth();
+  const { categories: allCategories } = useUserSettings();
 
   const {
     register,
@@ -55,7 +56,7 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
     }
   }
 
-  const categories = CATEGORIES_BY_FUND[fundType] ?? [];
+  const categories = allCategories[fundType] ?? [];
 
   return (
     <Card>
@@ -77,8 +78,8 @@ export function ExpenseForm({ fundType, onSuccess }: ExpenseFormProps) {
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
                   </SelectItem>
                 ))}
               </SelectContent>

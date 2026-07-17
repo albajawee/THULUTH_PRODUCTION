@@ -81,6 +81,23 @@ export const updateUserSettingsSchema = z.object({
   selectedLanguage: z.enum(['en', 'ar']).optional(),
 });
 
+export const updateFundCategoriesSchema = z.object({
+  fundType: z.enum(['stability', 'growth', 'life', 'charity']),
+  categories: z
+    .array(z.string().trim().min(1).max(40))
+    .max(30, 'Too many categories')
+    // de-duplicate case-insensitively, keeping first spelling
+    .transform((arr) => {
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const c of arr) {
+        const key = c.toLowerCase();
+        if (!seen.has(key)) { seen.add(key); out.push(c); }
+      }
+      return out;
+    }),
+});
+
 export const registerSchema = z.object({
   displayName: z
     .string()
