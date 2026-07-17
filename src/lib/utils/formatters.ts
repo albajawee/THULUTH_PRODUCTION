@@ -52,3 +52,17 @@ export function formatRelativeTime(dateString: string, locale = 'en-US'): string
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
 }
+
+/**
+ * Adds thousand separators to a raw numeric string as the user types.
+ *
+ * Operates on the string, not a Number, so a trailing decimal point or trailing zeros survive
+ * mid-typing (e.g. "1000." and "1000.0" must not collapse to "1,000"). Input is expected to be
+ * already sanitised to digits + at most one '.'.
+ */
+export function groupThousands(raw: string): string {
+  if (raw === '') return '';
+  const [intPart, ...rest] = raw.split('.');
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return rest.length ? `${grouped}.${rest.join('')}` : grouped;
+}

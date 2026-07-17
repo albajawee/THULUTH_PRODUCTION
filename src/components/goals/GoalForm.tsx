@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { createGoalSchema, CreateGoalInput } from '@/lib/utils/validators';
@@ -8,6 +8,7 @@ import { createGoal } from '@/lib/services/goal.service';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -36,6 +37,7 @@ export function GoalForm({ onSuccess }: GoalFormProps) {
     register,
     handleSubmit,
     setValue,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateGoalInput>({
@@ -71,13 +73,18 @@ export function GoalForm({ onSuccess }: GoalFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="targetAmount">Target Amount</Label>
-        <Input
-          id="targetAmount"
-          type="number"
-          min="1"
-          step="any"
-          placeholder="0"
-          {...register('targetAmount', { valueAsNumber: true })}
+        <Controller
+          control={control}
+          name="targetAmount"
+          render={({ field }) => (
+            <MoneyInput
+              id="targetAmount"
+              placeholder="0"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
         />
         {errors.targetAmount && <p className="text-sm text-destructive">{errors.targetAmount.message}</p>}
       </div>

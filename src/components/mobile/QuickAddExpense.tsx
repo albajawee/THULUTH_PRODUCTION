@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { addExpense } from '@/lib/services/expense.service';
 import { FUND_ORDER, FUND_CONFIG } from '@/lib/constants/fund-config';
 import { CATEGORIES_BY_FUND } from '@/lib/constants/fund-categories';
-import { toInputDate } from '@/lib/utils/formatters';
+import { toInputDate, groupThousands } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { FundType } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -94,9 +94,9 @@ export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {
               type="text"
               inputMode="decimal"
               placeholder="0"
-              value={amount}
+              value={groupThousands(amount)}
               onChange={(e) => {
-                const v = e.target.value;
+                const v = e.target.value.replace(/,/g, '');
                 if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v);
               }}
               className="w-40 bg-transparent text-center text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/40"

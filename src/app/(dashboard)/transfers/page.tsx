@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useTransfers } from '@/lib/hooks/useTransfers';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { createTransferSchema, CreateTransferInput } from '@/lib/utils/validators';
@@ -13,6 +13,7 @@ import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 import { FundType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Undo2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,7 @@ export default function TransfersPage() {
     handleSubmit,
     setValue,
     watch,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateTransferInput>({
@@ -130,12 +132,17 @@ export default function TransfersPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  min="1"
-                  step="any"
-                  {...register('amount', { valueAsNumber: true })}
+                <Controller
+                  control={control}
+                  name="amount"
+                  render={({ field }) => (
+                    <MoneyInput
+                      id="amount"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
                 />
                 {errors.amount && <p className="text-sm text-destructive">{errors.amount.message}</p>}
               </div>
