@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FundHealth } from '@/lib/services/reports.service';
 import { FUND_CONFIG, FUND_ORDER } from '@/lib/constants/fund-config';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -17,16 +18,15 @@ const BAR_COLOR: Record<string, string> = {
 
 export function FundHealthCard({ fundHealth }: { fundHealth: FundHealth[] }) {
   const { currency } = useUserSettings();
+  const t = useTranslations('reports');
+  const tf = useTranslations('nav');
   const byFund = new Map(fundHealth.map((f) => [f.fund, f]));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Fund Health</CardTitle>
-        <p className="text-xs text-muted-foreground">
-          How much each fund received versus spent this period. Utilization over 100% means the fund
-          spent more than it took in.
-        </p>
+        <CardTitle className="text-base">{t('fundHealth')}</CardTitle>
+        <p className="text-xs text-muted-foreground">{t('fundHealthDesc')}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {FUND_ORDER.map((fundId) => {
@@ -40,14 +40,14 @@ export function FundHealthCard({ fundHealth }: { fundHealth: FundHealth[] }) {
             <div key={fundId}>
               <div className="flex items-center gap-2 text-sm">
                 <Icon className={cn('h-4 w-4 shrink-0', config.color)} />
-                <span className="font-medium">{config.label}</span>
+                <span className="font-medium">{tf(fundId)}</span>
                 <span
                   className={cn(
                     'ml-auto text-xs font-semibold tabular-nums',
                     h.overspent ? 'text-rose-400' : 'text-muted-foreground'
                   )}
                 >
-                  {Math.round(h.utilization)}% used
+                  {t('used', { pct: Math.round(h.utilization) })}
                 </span>
               </div>
 
@@ -59,12 +59,12 @@ export function FundHealthCard({ fundHealth }: { fundHealth: FundHealth[] }) {
               </div>
 
               <div className="mt-1 flex justify-between text-xs text-muted-foreground tabular-nums">
-                <span>Spent {formatCurrency(h.spent, currency)}</span>
-                <span>Received {formatCurrency(h.received, currency)}</span>
+                <span>{t('spentLabel', { amount: formatCurrency(h.spent, currency) })}</span>
+                <span>{t('receivedLabel', { amount: formatCurrency(h.received, currency) })}</span>
               </div>
               {h.overspent && (
                 <p className="mt-0.5 text-xs text-rose-400">
-                  Overspent by {formatCurrency(-h.net, currency)}
+                  {t('overspentBy', { amount: formatCurrency(-h.net, currency) })}
                 </p>
               )}
             </div>

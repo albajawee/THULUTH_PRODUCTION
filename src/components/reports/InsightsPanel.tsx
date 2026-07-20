@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ReportInsight } from '@/lib/services/reports.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, TrendingUp, AlertTriangle, Info } from 'lucide-react';
@@ -12,17 +13,18 @@ const TONE = {
 } as const;
 
 export function InsightsPanel({ insights }: { insights: ReportInsight[] }) {
+  const t = useTranslations('reports');
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Lightbulb className="h-4 w-4 text-amber-400" />
-          Conclusions
+          {t('conclusions')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {insights.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Not enough activity to draw conclusions.</p>
+          <p className="text-sm text-muted-foreground">{t('notEnough')}</p>
         ) : (
           <ul className="space-y-2">
             {insights.map((insight, i) => {

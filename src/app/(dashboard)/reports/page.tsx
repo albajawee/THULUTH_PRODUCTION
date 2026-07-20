@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getRangeReport, RangeReport } from '@/lib/services/reports.service';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
@@ -9,7 +10,6 @@ import { DateRangePicker, DateRange, presetRange } from '@/components/reports/Da
 import { InsightsPanel } from '@/components/reports/InsightsPanel';
 import { FundHealthCard } from '@/components/reports/FundHealthCard';
 import { CategoryBreakdownCard } from '@/components/reports/CategoryBreakdownCard';
-import { FUND_CONFIG } from '@/lib/constants/fund-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +34,8 @@ function DeltaChip({ current, previous, invert }: { current: number; previous: n
 export default function ReportsPage() {
   const { user } = useAuth();
   const { currency } = useUserSettings();
+  const t = useTranslations('reports');
+  const tf = useTranslations('nav');
 
   const [range, setRange] = useState<DateRange>(() => presetRange('this-month'));
   const [activePreset, setActivePreset] = useState<string | null>('this-month');
@@ -52,7 +54,7 @@ export default function ReportsPage() {
         if (res.success) setReport(res.report);
         else setError(res.error);
       })
-      .catch(() => !cancelled && setError('Could not load the report.'))
+      .catch(() => !cancelled && setError(t('loadError')))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
   }, [user, range.from, range.to]);
@@ -60,10 +62,10 @@ export default function ReportsPage() {
   const tiles = useMemo(() => {
     if (!report) return [];
     return [
-      { label: 'Income', value: report.totalIncome, prev: report.previous.totalIncome, color: 'text-emerald-400', invert: false },
-      { label: 'Expenses', value: report.totalExpenses, prev: report.previous.totalExpenses, color: 'text-rose-400', invert: true },
-      { label: 'Net Savings', value: report.netSavings, prev: report.previous.netSavings, color: 'text-blue-400', invert: false },
-      { label: 'Charity', value: report.totalDonations, prev: 0, color: 'text-amber-400', invert: false },
+      { key: 'income', value: report.totalIncome, prev: report.previous.totalIncome, color: 'text-emerald-400', invert: false },
+      { key: 'expenses', value: report.totalExpenses, prev: report.previous.totalExpenses, color: 'text-rose-400', invert: true },
+      { key: 'netSavings', value: report.netSavings, prev: report.previous.netSavings, color: 'text-blue-400', invert: false },
+      { key: 'charity', value: report.totalDonations, prev: 0, color: 'text-amber-400', invert: false },
     ];
   }, [report]);
 
@@ -71,21 +73,21 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap print:hidden">
         <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
             {formatDate(range.from)} — {formatDate(range.to)}
-            {report ? ` · ${report.days} days` : ''}
+            {report ? ` · ${t('days', { days: report.days })}` : ''}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => window.print()} disabled={!report}>
           <Printer className="mr-2 h-4 w-4" />
-          Print / Save PDF
+          {t('printPdf')}
         </Button>
       </div>
 
       {/* Print-only header */}
       <div className="hidden print:block">
-        <h1 className="text-xl font-bold">THULUTH — Report</h1>
+        <h1 className="text-xl font-bold">{t('reportHeader')}</h1>
         <p className="text-sm">{formatDate(range.from)} — {formatDate(range.to)}</p>
       </div>
 
@@ -112,16 +114,16 @@ export default function ReportsPage() {
         <>
           {/* Headline tiles with vs-previous deltas */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {tiles.map((t) => (
-              <Card key={t.label}>
+            {tiles.map((tile) => (
+              <Card key={tile.key}>
                 <CardContent className="pt-5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">{t.label}</p>
-                    <DeltaChip current={t.value} previous={t.prev} invert={t.invert} />
+                    <p className="text-xs text-muted-foreground">{t(tile.key)}</p>
+                    <DeltaChip current={tile.value} previous={tile.prev} invert={tile.invert} />
                   </div>
-                  <p className={cn('text-xl font-bold', t.color)}>{formatCurrency(t.value, currency)}</p>
-                  {t.label === 'Net Savings' && (
-                    <p className="text-xs text-muted-foreground">{Math.round(report.savingsRate)}% savings rate</p>
+                  <p className={cn('text-xl font-bold', tile.color)}>{formatCurrency(tile.value, currency)}</p>
+                  {tile.key === 'netSavings' && (
+                    <p className="text-xs text-muted-foreground">{t('savingsRate', { rate: Math.round(report.savingsRate) })}</p>
                   )}
                 </CardContent>
               </Card>
@@ -138,19 +140,19 @@ export default function ReportsPage() {
           {/* Top expenses */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Largest expenses</CardTitle>
+              <CardTitle className="text-base">{t('largestExpenses')}</CardTitle>
             </CardHeader>
             <CardContent>
               {report.topExpenses.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">No expenses in this period.</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">{t('noExpenses')}</p>
               ) : (
                 <div className="space-y-2">
                   {report.topExpenses.map((e, i) => (
                     <div key={i} className="flex items-center justify-between gap-3 text-sm">
                       <div className="min-w-0">
                         <p className="truncate font-medium">{e.description}</p>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {e.category} · {FUND_CONFIG[e.fund].label} · {formatDate(e.date)}
+                        <p className="text-xs text-muted-foreground">
+                          {e.category} · {tf(e.fund)} · {formatDate(e.date)}
                         </p>
                       </div>
                       <span className="font-semibold tabular-nums text-rose-400 shrink-0">

@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { getTranslations } from 'next-intl/server';
 import { adminDb } from '../firebase/admin';
 import { requireUser } from '../auth/session';
 import { calcGoalProgress } from '../utils/calculations';
@@ -281,10 +282,17 @@ export async function getRangeReport(rawData: unknown): Promise<
     .map((e) => ({ description: e.description, category: e.category, fund: e.fundType, amount: e.amount, date: e.date }));
 
   // --- Insights (narrative conclusions) --------------------------------
-  const insights = buildInsights({
-    days, totalIncome, totalExpenses, totalDonations, netSavings, savingsRate,
-    fundHealth, categories, prev,
-  });
+  // Localized server-side: getTranslations picks up the request's locale cookie, so insights come
+  // back in the user's language with fund names translated (category names stay as entered).
+  const [tReports, tNav] = await Promise.all([
+    getTranslations('reports'),
+    getTranslations('nav'),
+  ]);
+  const insights = buildInsights(
+    { days, totalIncome, totalExpenses, totalDonations, netSavings, savingsRate, fundHealth, categories, prev },
+    tReports,
+    tNav
+  );
 
   return {
     success: true,
@@ -302,57 +310,61 @@ export async function getRangeReport(rawData: unknown): Promise<
   };
 }
 
-function pct(n: number): string {
-  return `${Math.abs(Math.round(n))}%`;
-}
+/** Absolute, rounded percentage as a number (the "%" lives in the message template). */
+const p = (n: number): number => Math.abs(Math.round(n));
 
-function buildInsights(d: {
-  days: number;
-  totalIncome: number;
-  totalExpenses: number;
-  totalDonations: number;
-  netSavings: number;
-  savingsRate: number;
-  fundHealth: FundHealth[];
-  categories: CategoryStat[];
-  prev: { totalIncome: number; totalExpenses: number; totalDonations: number };
-}): ReportInsight[] {
+type Translate = (key: string, values?: Record<string, string | number>) => string;
+
+function buildInsights(
+  d: {
+    days: number;
+    totalIncome: number;
+    totalExpenses: number;
+    totalDonations: number;
+    netSavings: number;
+    savingsRate: number;
+    fundHealth: FundHealth[];
+    categories: CategoryStat[];
+    prev: { totalIncome: number; totalExpenses: number; totalDonations: number };
+  },
+  t: Translate,
+  tf: Translate
+): ReportInsight[] {
   const out: ReportInsight[] = [];
-  const label = (f: FundType) => f.charAt(0).toUpperCase() + f.slice(1);
 
   if (d.totalIncome === 0 && d.totalExpenses === 0) {
-    return [{ tone: 'info', text: 'No activity recorded in this period.' }];
+    return [{ tone: 'info', text: t('insightNoActivity') }];
   }
 
   // Savings rate
   if (d.totalIncome > 0) {
     if (d.netSavings >= 0) {
-      out.push({ tone: 'good', text: `You kept ${pct(d.savingsRate)} of your income — a positive savings rate this period.` });
+      out.push({ tone: 'good', text: t('insightSavedPositive', { pct: p(d.savingsRate) }) });
     } else {
-      out.push({ tone: 'warn', text: `You spent more than you earned this period: outgoings exceeded income by ${pct(-d.savingsRate)}.` });
+      out.push({ tone: 'warn', text: t('insightSpentMore', { pct: p(-d.savingsRate) }) });
     }
   }
 
   // Overspent funds (methodology adherence)
   const overspent = d.fundHealth.filter((f) => f.overspent && f.spent > 0);
   for (const f of overspent) {
-    out.push({ tone: 'warn', text: `Your ${label(f.fund)} fund spent more than it received — over by its incoming amount, at ${pct(f.utilization)} utilization.` });
+    out.push({ tone: 'warn', text: t('insightOverspentFund', { fund: tf(f.fund), pct: p(f.utilization) }) });
   }
   const healthiest = [...d.fundHealth].filter((f) => f.received > 0).sort((a, b) => a.utilization - b.utilization)[0];
   if (healthiest && !healthiest.overspent && healthiest.spent > 0) {
-    out.push({ tone: 'good', text: `${label(healthiest.fund)} is your best-managed fund — you used only ${pct(healthiest.utilization)} of what it received.` });
+    out.push({ tone: 'good', text: t('insightBestFund', { fund: tf(healthiest.fund), pct: p(healthiest.utilization) }) });
   }
 
-  // Top category
+  // Top category (category name is user data — not translated)
   if (d.categories.length > 0) {
     const top = d.categories[0];
-    out.push({ tone: 'info', text: `Your biggest expense category was ${top.category} (${label(top.fund)}), at ${pct(top.share)} of all spending.` });
+    out.push({ tone: 'info', text: t('insightTopCategory', { category: top.category, fund: tf(top.fund), pct: p(top.share) }) });
   }
 
   // Charity share
   if (d.totalIncome > 0 && d.totalDonations > 0) {
     const charityShare = (d.totalDonations / d.totalIncome) * 100;
-    out.push({ tone: 'good', text: `You gave ${pct(charityShare)} of your income to charity this period.` });
+    out.push({ tone: 'good', text: t('insightCharity', { pct: p(charityShare) }) });
   }
 
   // Comparison vs previous period
@@ -361,7 +373,9 @@ function buildInsights(d: {
     if (Math.abs(delta) >= 5) {
       out.push({
         tone: delta > 0 ? 'warn' : 'good',
-        text: `Spending is ${delta > 0 ? 'up' : 'down'} ${pct(delta)} versus the previous ${d.days} days.`,
+        text: delta > 0
+          ? t('insightSpendingUp', { pct: p(delta), days: d.days })
+          : t('insightSpendingDown', { pct: p(delta), days: d.days }),
       });
     }
   }

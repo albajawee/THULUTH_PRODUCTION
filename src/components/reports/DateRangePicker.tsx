@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   startOfMonth, endOfMonth, startOfYear, endOfYear,
   subMonths, subDays, format,
@@ -37,14 +38,14 @@ function presetRange(key: string): DateRange {
   }
 }
 
-const PRESETS: { key: string; label: string }[] = [
-  { key: 'this-month', label: 'This month' },
-  { key: 'last-month', label: 'Last month' },
-  { key: 'last-3', label: 'Last 3 months' },
-  { key: 'last-30', label: 'Last 30 days' },
-  { key: 'this-year', label: 'This year' },
-  { key: 'last-year', label: 'Last year' },
-  { key: 'all', label: 'All time' },
+const PRESETS: { key: string; labelKey: string }[] = [
+  { key: 'this-month', labelKey: 'thisMonth' },
+  { key: 'last-month', labelKey: 'lastMonth' },
+  { key: 'last-3', labelKey: 'last3Months' },
+  { key: 'last-30', labelKey: 'last30Days' },
+  { key: 'this-year', labelKey: 'thisYear' },
+  { key: 'last-year', labelKey: 'lastYear' },
+  { key: 'all', labelKey: 'allTime' },
 ];
 
 interface DateRangePickerProps {
@@ -54,19 +55,20 @@ interface DateRangePickerProps {
 }
 
 export function DateRangePicker({ value, activePreset, onChange }: DateRangePickerProps) {
+  const t = useTranslations('reports');
   const [showCustom, setShowCustom] = useState(activePreset === null);
 
   return (
     <div className="space-y-3 print:hidden">
       <div className="flex flex-wrap gap-2">
-        {PRESETS.map((p) => (
+        {PRESETS.map((preset) => (
           <Button
-            key={p.key}
-            variant={activePreset === p.key ? 'default' : 'outline'}
+            key={preset.key}
+            variant={activePreset === preset.key ? 'default' : 'outline'}
             size="sm"
-            onClick={() => { setShowCustom(false); onChange(presetRange(p.key), p.key); }}
+            onClick={() => { setShowCustom(false); onChange(presetRange(preset.key), preset.key); }}
           >
-            {p.label}
+            {t(preset.labelKey)}
           </Button>
         ))}
         <Button
@@ -74,14 +76,14 @@ export function DateRangePicker({ value, activePreset, onChange }: DateRangePick
           size="sm"
           onClick={() => setShowCustom((s) => !s)}
         >
-          Custom…
+          {t('custom')}
         </Button>
       </div>
 
       {showCustom && (
         <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border/50 p-3">
           <div className="space-y-1">
-            <Label htmlFor="from" className="text-xs">From</Label>
+            <Label htmlFor="from" className="text-xs">{t('from')}</Label>
             <Input
               id="from"
               type="date"
@@ -92,7 +94,7 @@ export function DateRangePicker({ value, activePreset, onChange }: DateRangePick
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="to" className="text-xs">To</Label>
+            <Label htmlFor="to" className="text-xs">{t('to')}</Label>
             <Input
               id="to"
               type="date"
