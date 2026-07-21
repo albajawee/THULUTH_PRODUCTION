@@ -48,12 +48,12 @@ normalizes both, and now also strips stray surrounding quotes and fails with an 
 "not a valid PEM key" message instead of a silent 401. If a variable is missing entirely, the
 build fails with a clear `Missing required environment variable: …` message.
 
-## 3. Node.js version (required — 22.x)
+## 3. The `jose` ESM trap (already fixed — don't undo it)
 
-`package.json` pins `"engines": { "node": "22.x" }`. This is not cosmetic: `firebase-admin@14`
-pulls in `jwks-rsa@4`, which `require()`s `jose@6` — and `jose@6` is ESM-only. Node only supports
-`require()` of an ES module from **22.12** onward. On Node 20 or 18 every request to
-`/api/session` dies at module load with:
+`firebase-admin@14` pulls in `jwks-rsa@4`, whose `src/utils.js` is CommonJS and does a plain
+`require('jose')`. Every `jwks-rsa@4.x` depends on `jose@^6.1.3`, and **`jose@6` is ESM-only**.
+Node only supports `require()` of an ES module from **22.12** onward, so on Node 20 or 18 every
+request to `/api/session` dies at module load with:
 
 ```
 ERR_REQUIRE_ESM: require() of ES Module .../jose/dist/webapi/index.js
@@ -64,9 +64,24 @@ which reaches the browser as *"Could not establish a session. Please try again."
 registration both fail, while the Firebase Auth account is still created, because the password
 check happens client-side and only the cookie is minted on the server.
 
-Vercel honors `engines.node`, but confirm under **Settings → General → Node.js Version** that it
-reads `22.x`. This is also why the bug is invisible locally: `node -v` on a dev machine is
-typically already ≥ 22.12.
+This is invisible locally: a dev machine's `node -v` is typically already ≥ 22.12, so `require()`
+of ESM just works.
+
+Two independent guards, because the first one alone was not enough:
+
+1. **`overrides` in `package.json`** pins `jose@^5.10.0` *only* under `jwks-rsa` (v5 still ships a
+   CommonJS build, and exposes the two APIs jwks-rsa uses — `importJWK` and `exportSPKI`). This is
+   the guard that actually holds, since it removes the ESM `require()` entirely and is therefore
+   independent of the runtime. The override is scoped so the rest of the tree keeps `jose@6`.
+2. **`engines: { "node": "22.x" }`** asks for a runtime new enough not to need the override.
+   Note that Vercel's **Settings → General → Node.js Version** takes precedence over
+   `engines.node` — setting `engines` alone did *not* change the deployed runtime.
+
+To reproduce the failure (or confirm the fix) without deploying, make Node 22 act like Node 20:
+
+```bash
+node --no-experimental-require-module -e "require('firebase-admin/auth')"
+```
 
 ## 4. Firebase configuration (one-time)
 
