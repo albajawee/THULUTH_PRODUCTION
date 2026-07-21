@@ -58,9 +58,20 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch {
-    // Don't leak whether the token was expired, malformed, or revoked.
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
+  } catch (error) {
+    // The response stays generic — it must not leak whether the token was expired, malformed,
+    // or revoked. The *log* is the opposite: a misconfigured credential in production is
+    // indistinguishable from a bad password without it.
+    console.error('[api/session] Failed to establish session:', error);
+
+    // A `auth/…` code means Firebase rejected the caller's token; anything else (bad service
+    // account, unreachable Firestore) is our fault and should read as 500, not 401.
+    const code = (error as { code?: string })?.code ?? '';
+    const isClientAuthFailure = code.startsWith('auth/');
+
+    return isClientAuthFailure
+      ? NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
+      : NextResponse.json({ error: 'Session service unavailable' }, { status: 500 });
   }
 }
 

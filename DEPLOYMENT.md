@@ -33,11 +33,23 @@ In Vercel → Project → **Settings → Environment Variables**, add all nine. 
 | `FIREBASE_ADMIN_CLIENT_EMAIL` | Service-account email |
 | `FIREBASE_ADMIN_PRIVATE_KEY` | Service-account private key — see note below |
 
-**The private key:** paste it exactly as it appears in `.env.local`, including the surrounding
-quotes and the `\n` sequences (`"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"`).
-The app normalizes `\n` into real newlines at runtime, so either the escaped form or a
-real-multiline paste works. If a variable is missing, the build fails with a clear
-`Missing required environment variable: …` message rather than a cryptic one.
+**The private key — the one that bites everyone:** paste the key **without the surrounding
+double quotes**. Those quotes exist only for `.env.local`, where dotenv strips them; Vercel
+stores whatever you paste *verbatim*, so a leading `"` becomes part of the key and corrupts
+the PEM. The symptom is sign-in appearing to work and then failing with
+*"Could not establish a session"*, because the password check happens in the browser while the
+cookie is minted on the server.
+
+Correct value to paste (starts with `-`, ends with `-`):
+
+```
+-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n
+```
+
+The `\n` sequences may stay escaped, or you can paste the key as real multiple lines — the app
+normalizes both, and now also strips stray surrounding quotes and fails with an explicit
+"not a valid PEM key" message instead of a silent 401. If a variable is missing entirely, the
+build fails with a clear `Missing required environment variable: …` message.
 
 ## 3. Firebase configuration (one-time)
 
