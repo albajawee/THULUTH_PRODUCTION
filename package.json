@@ -2,6 +2,9 @@
   "name": "agents-thuluth-architecture-design-4eac45f8",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

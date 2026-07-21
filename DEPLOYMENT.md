@@ -33,12 +33,9 @@ In Vercel → Project → **Settings → Environment Variables**, add all nine. 
 | `FIREBASE_ADMIN_CLIENT_EMAIL` | Service-account email |
 | `FIREBASE_ADMIN_PRIVATE_KEY` | Service-account private key — see note below |
 
-**The private key — the one that bites everyone:** paste the key **without the surrounding
-double quotes**. Those quotes exist only for `.env.local`, where dotenv strips them; Vercel
-stores whatever you paste *verbatim*, so a leading `"` becomes part of the key and corrupts
-the PEM. The symptom is sign-in appearing to work and then failing with
-*"Could not establish a session"*, because the password check happens in the browser while the
-cookie is minted on the server.
+**The private key:** paste it **without the surrounding double quotes**. Those quotes exist only
+for `.env.local`, where dotenv strips them; Vercel stores whatever you paste *verbatim*, so a
+leading `"` becomes part of the key and corrupts the PEM.
 
 Correct value to paste (starts with `-`, ends with `-`):
 
@@ -51,7 +48,27 @@ normalizes both, and now also strips stray surrounding quotes and fails with an 
 "not a valid PEM key" message instead of a silent 401. If a variable is missing entirely, the
 build fails with a clear `Missing required environment variable: …` message.
 
-## 3. Firebase configuration (one-time)
+## 3. Node.js version (required — 22.x)
+
+`package.json` pins `"engines": { "node": "22.x" }`. This is not cosmetic: `firebase-admin@14`
+pulls in `jwks-rsa@4`, which `require()`s `jose@6` — and `jose@6` is ESM-only. Node only supports
+`require()` of an ES module from **22.12** onward. On Node 20 or 18 every request to
+`/api/session` dies at module load with:
+
+```
+ERR_REQUIRE_ESM: require() of ES Module .../jose/dist/webapi/index.js
+from .../jwks-rsa/src/utils.js not supported
+```
+
+which reaches the browser as *"Could not establish a session. Please try again."* — login and
+registration both fail, while the Firebase Auth account is still created, because the password
+check happens client-side and only the cookie is minted on the server.
+
+Vercel honors `engines.node`, but confirm under **Settings → General → Node.js Version** that it
+reads `22.x`. This is also why the bug is invisible locally: `node -v` on a dev machine is
+typically already ≥ 22.12.
+
+## 4. Firebase configuration (one-time)
 
 The app reads Firestore from the client under security rules, and those rules + indexes must be
 live in the Firebase project — Vercel does not deploy them. From the repo root:
@@ -71,13 +88,13 @@ firebase deploy --only firestore:rules,firestore:indexes
 domain, so nothing is needed now. If you ever add Google/social sign-in, add your Vercel domain
 under Firebase Console → Authentication → Settings → Authorized domains.
 
-## 4. Deploy
+## 5. Deploy
 
 Trigger the deploy. On success you'll get `https://thuluth-production.vercel.app` (or your custom
 domain). The session cookie is automatically `Secure` in production (HTTPS), and the proxy
 redirects unauthenticated users to `/login`.
 
-## 5. Post-deploy smoke test
+## 6. Post-deploy smoke test
 
 1. Open the URL → you should be redirected to `/login`.
 2. Register a new account → you land on the dashboard with four funds initialized.
