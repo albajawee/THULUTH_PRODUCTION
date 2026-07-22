@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
-import { useTransferTotal } from '@/lib/hooks/useTransferTotal';
 import { useTransactions } from '@/lib/hooks/useTransactions';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useIncome } from '@/lib/hooks/useIncome';
@@ -20,21 +19,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function DashboardPage() {
   const { user } = useAuth();
   const t = useTranslations('dashboard');
-  const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent } = useFunds(user?.uid ?? null);
-  const { totalTransferred } = useTransferTotal(user?.uid ?? null);
+  const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent, totalTransferredIn } =
+    useFunds(user?.uid ?? null);
   const { transactions, loading: txLoading } = useTransactions(user?.uid ?? null, 10);
   const { activeGoals } = useGoals(user?.uid ?? null);
   const { incomes } = useIncome(user?.uid ?? null, 100);
   const { expenses } = useExpenses(user?.uid ?? null, undefined, 100);
   const { donations } = useDonations(user?.uid ?? null, 100);
 
-  // The fund counters track money in/out of each fund, so moving money between funds shows up in
-  // both — correct per fund, but it makes an internal move look like income AND an expense once
-  // summed across all four. These headline figures are account-level, so the transfers come back
-  // out. Clamped at zero: a negative "total income" from drifted data would read as a far more
-  // alarming bug than the small inaccuracy it would be reporting.
-  const totalIncome = Math.max(0, totalReceived - totalTransferred);
-  const totalExpenses = Math.max(0, totalSpent - totalTransferred);
+  // `totalSpent` no longer includes transfers (they go to `transferredOut`), so spending needs no
+  // correction. Receipts still do: a fund genuinely receives a transfer, but at account level that
+  // money is not new income — it already existed in another fund. Clamped at zero because a
+  // negative "total income" from drifted data would read as a far more alarming bug than the
+  // inaccuracy it would be reporting.
+  const totalIncome = Math.max(0, totalReceived - totalTransferredIn);
+  const totalExpenses = totalSpent;
 
   if (fundsLoading) {
     return (

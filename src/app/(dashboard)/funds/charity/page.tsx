@@ -49,7 +49,7 @@ export default function CharityPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-5">
             <p className="text-xs text-muted-foreground">{tfund('balance')}</p>
@@ -74,6 +74,17 @@ export default function CharityPage() {
           <CardContent className="pt-5">
             <p className="text-xs text-muted-foreground">{t('totalDonated')}</p>
             <p className="text-xl font-bold text-rose-400">{formatCurrency(totalDonated, currency)}</p>
+          </CardContent>
+        </Card>
+        {/* Charity can be transferred out of like any other fund; that is not giving. */}
+        <Card>
+          <CardContent className="pt-5">
+            <p className="text-xs text-muted-foreground">{tfund('totalTransferred')}</p>
+            {charityFund ? (
+              <p className="text-xl font-bold text-sky-400">
+                {formatCurrency(charityFund.transferredOut ?? 0, currency)}
+              </p>
+            ) : <Skeleton className="h-7 w-32 mt-1" />}
           </CardContent>
         </Card>
       </div>

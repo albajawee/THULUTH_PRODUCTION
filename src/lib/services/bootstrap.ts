@@ -33,6 +33,8 @@ export async function initFundsFor(userId: string): Promise<void> {
       balance: 0,
       totalReceived: 0,
       totalSpent: 0,
+      transferredIn: 0,
+      transferredOut: 0,
       updatedAt: now,
     });
   }

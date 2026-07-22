@@ -46,6 +46,12 @@ export function useFunds(userId: string | null) {
   const totalSpent = funds
     ? Object.values(funds).reduce((s, f) => s + f.totalSpent, 0)
     : 0;
+  // Every transfer lands in exactly one fund's `transferredIn`, so this sums to the total moved
+  // between funds — the amount account-level income must exclude. Reading it from the fund docs
+  // means the dashboard still costs four document reads and never scans the transfers collection.
+  const totalTransferredIn = funds
+    ? Object.values(funds).reduce((s, f) => s + (f.transferredIn ?? 0), 0)
+    : 0;
 
-  return { funds, loading, totalBalance, totalReceived, totalSpent };
+  return { funds, loading, totalBalance, totalReceived, totalSpent, totalTransferredIn };
 }

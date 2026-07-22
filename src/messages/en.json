@@ -73,7 +73,8 @@
     "expenseDeleteFailed": "Could not delete the expense",
     "quickAddTitle": "Quick add expense",
     "quickAddButton": "Add expense",
-    "quickAddFailed": "Could not save that expense"
+    "quickAddFailed": "Could not save that expense",
+    "totalTransferred": "Total Transferred"
   },
   "income": {
     "title": "Income",

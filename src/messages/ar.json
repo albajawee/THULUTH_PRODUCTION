@@ -73,7 +73,8 @@
     "expenseDeleteFailed": "تعذّر حذف المصروف",
     "quickAddTitle": "إضافة سريعة لمصروف",
     "quickAddButton": "إضافة مصروف",
-    "quickAddFailed": "تعذّر حفظ هذا المصروف"
+    "quickAddFailed": "تعذّر حفظ هذا المصروف",
+    "totalTransferred": "إجمالي المُحوَّل"
   },
   "income": {
     "title": "الدخل",

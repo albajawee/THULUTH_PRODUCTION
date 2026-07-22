@@ -44,17 +44,29 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {(['balance', 'totalReceived', 'totalSpent'] as const).map((key) => {
-          const labels = { balance: t('balance'), totalReceived: t('totalReceived'), totalSpent: t('totalSpent') };
-          const colors = { balance: config.color, totalReceived: 'text-emerald-400', totalSpent: 'text-rose-400' };
+      {/* Transferred is its own figure, never folded into Spent: money moved to another fund has
+          not left your accounts, and showing it as spending overstates what the fund consumed. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {(['balance', 'totalReceived', 'totalSpent', 'transferredOut'] as const).map((key) => {
+          const labels = {
+            balance: t('balance'),
+            totalReceived: t('totalReceived'),
+            totalSpent: t('totalSpent'),
+            transferredOut: t('totalTransferred'),
+          };
+          const colors = {
+            balance: config.color,
+            totalReceived: 'text-emerald-400',
+            totalSpent: 'text-rose-400',
+            transferredOut: 'text-sky-400',
+          };
           return (
             <Card key={key}>
               <CardContent className="pt-5">
                 <p className="text-xs text-muted-foreground">{labels[key]}</p>
                 {fund ? (
                   <p className={cn('text-xl font-bold', colors[key])}>
-                    {formatCurrency(fund[key], currency)}
+                    {formatCurrency(fund[key] ?? 0, currency)}
                   </p>
                 ) : (
                   <Skeleton className="h-7 w-32 mt-1" />
