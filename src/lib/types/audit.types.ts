@@ -12,7 +12,8 @@ export type AuditAction =
   | 'income_reversed'
   | 'expense_reversed'
   | 'funds_initialized'
-  | 'settings_updated';
+  | 'settings_updated'
+  | 'category_renamed';
 
 export interface AuditLog {
   id: string;

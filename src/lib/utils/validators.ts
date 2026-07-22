@@ -95,6 +95,22 @@ export const updateFundCategoriesSchema = z.object({
     }),
 });
 
+/**
+ * Renaming is deliberately its own operation rather than a list edit: a category IS its label, and
+ * that label is copied onto every expense that used it. Sending a changed list through
+ * updateFundCategories cannot express "these are the same category" — it reads as a delete plus an
+ * add, silently orphaning the recorded expenses into a bucket no longer offered anywhere.
+ */
+export const renameFundCategorySchema = z.object({
+  fundType: z.enum(['stability', 'growth', 'life', 'charity']),
+  from: z.string().trim().min(1, 'Category is required').max(40),
+  to: z
+    .string()
+    .trim()
+    .min(1, 'New name is required')
+    .max(40, 'Name is too long'),
+});
+
 export const registerSchema = z.object({
   displayName: z
     .string()
@@ -118,5 +134,6 @@ export type CreateGoalInput = z.infer<typeof createGoalSchema>;
 export type CreateTransferInput = z.infer<typeof createTransferSchema>;
 export type AddDonationInput = z.infer<typeof addDonationSchema>;
 export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;
+export type RenameFundCategoryInput = z.infer<typeof renameFundCategorySchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

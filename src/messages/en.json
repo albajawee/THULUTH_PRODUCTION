@@ -285,12 +285,15 @@
     "saved": "Settings saved",
     "saveFailed": "Failed to save settings",
     "categories": "Expense Categories",
-    "categoriesDesc": "Customise the categories offered when you add an expense to each fund. Removing one never changes expenses you already recorded.",
+    "categoriesDesc": "Customise the categories offered when you add an expense to each fund. Renaming one updates every expense recorded under it; removing one never changes expenses you already recorded.",
     "addCategoryPlaceholder": "Add a category…",
     "noCategories": "No categories — add one below.",
     "add": "Add",
     "categoryExists": "\"{name}\" already exists in {fund}",
-    "categorySaveFailed": "Could not save categories"
+    "categorySaveFailed": "Could not save categories",
+    "renameCategory": "Rename {name}",
+    "categoryRenamed": "Renamed to \"{name}\" · {count} expenses updated",
+    "categoryRenameFailed": "Could not rename category"
   },
   "common": {
     "save": "Save",
