@@ -58,7 +58,11 @@ export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{expense.description}</p>
+                    {/* Description is optional — omit the line entirely rather than leaving an
+                        empty one; the category badge below still identifies the row. */}
+                    {expense.description && (
+                      <p className="text-sm font-medium truncate">{expense.description}</p>
+                    )}
                     <div className="flex items-center gap-2 mt-0.5">
                       <Badge variant="outline" className="text-xs capitalize">
                         {expense.category}

@@ -57,7 +57,9 @@ export async function addExpense(rawData: unknown) {
     type: 'expense',
     fundType: fundType as FundType,
     amount: -amount,
-    description,
+    // Description is optional; the category is the only always-present label, and a transaction
+    // ledger with blank rows is unreadable.
+    description: description || category,
     relatedId: expenseId,
     relatedType: 'expense',
     createdAt: now,

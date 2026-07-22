@@ -64,7 +64,9 @@ export function GoalCard({ goal, fundBalance }: GoalCardProps) {
               </Badge>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{goal.description}</p>
+          {goal.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{goal.description}</p>
+          )}
         </CardHeader>
         <CardContent>
           <Progress value={percentage} className="h-2 mb-3" />

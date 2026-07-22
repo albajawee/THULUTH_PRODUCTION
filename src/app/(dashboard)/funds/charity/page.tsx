@@ -105,7 +105,11 @@ export default function CharityPage() {
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{donation.recipient}</p>
-                      <p className="text-xs text-muted-foreground">{donation.description} · {formatDate(donation.date)}</p>
+                      {/* Description is optional — don't render a dangling separator without it. */}
+                      <p className="text-xs text-muted-foreground">
+                        {donation.description ? `${donation.description} · ` : ''}
+                        {formatDate(donation.date)}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1 ml-3 shrink-0">
                       <span className="text-sm font-semibold text-rose-400 tabular-nums">

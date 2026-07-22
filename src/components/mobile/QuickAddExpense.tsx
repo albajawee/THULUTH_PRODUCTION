@@ -22,8 +22,8 @@ interface QuickAddExpenseProps {
  *
  * Every field the full ExpenseForm asks for that we can reasonably infer, we infer:
  *  - `date` is today (the point is logging a spend as it happens)
- *  - `description` defaults to the category label, because addExpenseSchema requires a non-empty
- *    one and making someone type prose is what makes an app too slow to use at a checkout counter.
+ *  - `description` defaults to the category label. It is optional now, but a labelled row still
+ *    beats a blank one, and typing prose is what makes an app too slow to use at a checkout counter.
  * Anything more considered belongs in the full form on the fund page.
  */
 export function QuickAddExpense({ open, onOpenChange }: QuickAddExpenseProps) {

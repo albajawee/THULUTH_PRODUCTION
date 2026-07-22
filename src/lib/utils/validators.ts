@@ -20,10 +20,11 @@ export const addExpenseSchema = z.object({
     .number({ error: 'Amount must be a number' })
     .positive('Amount must be positive')
     .max(1_000_000_000, 'Amount is too large'),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(300, 'Description is too long'),
+  // Optional: no `.min(1)`, so an empty string passes. Deliberately NOT `.optional()` — that
+  // would make the field `string | undefined`, which react-hook-form binds to as the form's input
+  // type (churning every consumer) and which Firestore rejects outright as a field value.
+  // Empty-string-means-absent keeps one type end to end.
+  description: z.string().max(300, 'Description is too long'),
   date: z.string().min(1, 'Date is required'),
 });
 
@@ -32,10 +33,8 @@ export const createGoalSchema = z.object({
     .string()
     .min(1, 'Title is required')
     .max(100, 'Title is too long'),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(500, 'Description is too long'),
+  // Optional — see the note on addExpenseSchema.description.
+  description: z.string().max(500, 'Description is too long'),
   targetAmount: z
     .number({ error: 'Target amount must be a number' })
     .positive('Target amount must be positive')
@@ -68,10 +67,8 @@ export const addDonationSchema = z.object({
     .string()
     .min(1, 'Recipient is required')
     .max(100, 'Recipient is too long'),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(300, 'Description is too long'),
+  // Optional — see the note on addExpenseSchema.description.
+  description: z.string().max(300, 'Description is too long'),
   date: z.string().min(1, 'Date is required'),
 });
 
