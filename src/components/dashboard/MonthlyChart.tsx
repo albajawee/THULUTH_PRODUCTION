@@ -14,15 +14,21 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
-import { Income, Expense } from '@/lib/types';
+import { Income, Expense, Donation } from '@/lib/types';
 import { format, eachMonthOfInterval, subMonths } from 'date-fns';
 
 interface MonthlyChartProps {
   incomes: Income[];
   expenses: Expense[];
+  /**
+   * Counted in the expense line. A donation is money leaving the account exactly like an expense
+   * is — it just lives in its own collection. Omitting it made this chart disagree with the
+   * dashboard's Total Expenses card, which derives from the fund counters and always included it.
+   */
+  donations: Donation[];
 }
 
-export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
+export function MonthlyChart({ incomes, expenses, donations }: MonthlyChartProps) {
   const { currency } = useUserSettings();
   const t = useTranslations('dashboard');
   const now = new Date();
@@ -36,9 +42,13 @@ export function MonthlyChart({ incomes, expenses }: MonthlyChartProps) {
     const monthIncome = incomes
       .filter((i) => i.date.startsWith(monthStr))
       .reduce((s, i) => s + i.amount, 0);
-    const monthExpenses = expenses
-      .filter((e) => e.date.startsWith(monthStr))
-      .reduce((s, e) => s + e.amount, 0);
+    const monthExpenses =
+      expenses
+        .filter((e) => e.date.startsWith(monthStr))
+        .reduce((s, e) => s + e.amount, 0) +
+      donations
+        .filter((d) => d.date.startsWith(monthStr))
+        .reduce((s, d) => s + d.amount, 0);
 
     return {
       month: format(month, 'MMM'),

@@ -242,7 +242,8 @@
     "deleteDesc": "سيعيد هذا {amount} إلى صندوق الصدقة. يحتفظ الدفتر بقيد للتبرع وللعكس معًا.",
     "deleteConfirm": "حذف التبرع",
     "returnedToast": "تمت إعادة {amount} إلى صندوق الصدقة",
-    "deleteFailedToast": "تعذّر حذف التبرع"
+    "deleteFailedToast": "تعذّر حذف التبرع",
+    "selectCategory": "اختر فئة"
   },
   "auth": {
     "login": "تسجيل الدخول",

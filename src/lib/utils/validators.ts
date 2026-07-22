@@ -67,6 +67,9 @@ export const addDonationSchema = z.object({
     .string()
     .min(1, 'Recipient is required')
     .max(100, 'Recipient is too long'),
+  // Same shape as an expense's category, drawn from the charity fund's list in Settings — which
+  // existed and was editable long before anything read it.
+  category: z.string().min(1, 'Category is required'),
   // Optional — see the note on addExpenseSchema.description.
   description: z.string().max(300, 'Description is too long'),
   date: z.string().min(1, 'Date is required'),

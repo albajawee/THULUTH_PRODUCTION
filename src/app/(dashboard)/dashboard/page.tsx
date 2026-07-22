@@ -8,6 +8,7 @@ import { useTransactions } from '@/lib/hooks/useTransactions';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useIncome } from '@/lib/hooks/useIncome';
 import { useExpenses } from '@/lib/hooks/useExpenses';
+import { useDonations } from '@/lib/hooks/useDonations';
 import { FundCard } from '@/components/dashboard/FundCard';
 import { SummaryBar } from '@/components/dashboard/SummaryBar';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const { activeGoals } = useGoals(user?.uid ?? null);
   const { incomes } = useIncome(user?.uid ?? null, 100);
   const { expenses } = useExpenses(user?.uid ?? null, undefined, 100);
+  const { donations } = useDonations(user?.uid ?? null, 100);
 
   // The fund counters track money in/out of each fund, so moving money between funds shows up in
   // both — correct per fund, but it makes an internal move look like income AND an expense once
@@ -75,7 +77,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MonthlyChart incomes={incomes} expenses={expenses} />
+        <MonthlyChart incomes={incomes} expenses={expenses} donations={donations} />
         <ActiveGoals
           goals={activeGoals}
           fundBalances={{

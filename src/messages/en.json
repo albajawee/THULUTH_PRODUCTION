@@ -242,7 +242,8 @@
     "deleteDesc": "This returns {amount} to the charity fund. The ledger keeps a record of both the donation and the reversal.",
     "deleteConfirm": "Delete donation",
     "returnedToast": "Returned {amount} to the charity fund",
-    "deleteFailedToast": "Could not delete the donation"
+    "deleteFailedToast": "Could not delete the donation",
+    "selectCategory": "Select a category"
   },
   "auth": {
     "login": "Sign In",

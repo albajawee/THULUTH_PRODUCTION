@@ -10,6 +10,7 @@ import { reverseDonation } from '@/lib/services/charity.service';
 import { DonationForm } from '@/components/charity/DonationForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HandHeart, Trash2 } from 'lucide-react';
@@ -105,11 +106,19 @@ export default function CharityPage() {
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{donation.recipient}</p>
-                      {/* Description is optional — don't render a dangling separator without it. */}
-                      <p className="text-xs text-muted-foreground">
-                        {donation.description ? `${donation.description} · ` : ''}
-                        {formatDate(donation.date)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {/* Absent on donations recorded before categories existed. */}
+                        {donation.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {donation.category}
+                          </Badge>
+                        )}
+                        {/* Description is optional — don't render a dangling separator without it. */}
+                        <span className="text-xs text-muted-foreground">
+                          {donation.description ? `${donation.description} · ` : ''}
+                          {formatDate(donation.date)}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 ml-3 shrink-0">
                       <span className="text-sm font-semibold text-rose-400 tabular-nums">

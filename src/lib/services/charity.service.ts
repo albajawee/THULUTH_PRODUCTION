@@ -16,7 +16,7 @@ export async function recordDonation(rawData: unknown) {
     return { success: false, error: parsed.error.flatten().fieldErrors };
   }
 
-  const { amount, recipient, description, date } = parsed.data;
+  const { amount, recipient, category, description, date } = parsed.data;
   const now = new Date().toISOString();
   const userRef = adminDb.collection('users').doc(userId);
 
@@ -37,6 +37,7 @@ export async function recordDonation(rawData: unknown) {
     userId,
     amount,
     recipient,
+    category,
     description,
     date,
     createdAt: now,
@@ -77,7 +78,7 @@ export async function recordDonation(rawData: unknown) {
     action: 'donation_recorded',
     entityType: 'donation',
     entityId: donationId,
-    after: { amount, recipient, description, date },
+    after: { amount, recipient, category, description, date },
     createdAt: now,
   });
 
