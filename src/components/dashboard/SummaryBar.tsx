@@ -9,18 +9,23 @@ import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 
 interface SummaryBarProps {
   totalBalance: number;
-  totalReceived: number;
-  totalSpent: number;
+  /**
+   * Account-level income and spending — transfers between funds excluded. Named for what they
+   * mean, not for the fund counters they derive from: the previous `totalReceived`/`totalSpent`
+   * naming is what let fund-level flows get displayed as income and expenses.
+   */
+  totalIncome: number;
+  totalExpenses: number;
 }
 
-export function SummaryBar({ totalBalance, totalReceived, totalSpent }: SummaryBarProps) {
+export function SummaryBar({ totalBalance, totalIncome, totalExpenses }: SummaryBarProps) {
   const { currency } = useUserSettings();
   const t = useTranslations('dashboard');
   const totalSavings = totalBalance;
   const items = [
     { label: t('totalBalance'), value: totalBalance, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: t('totalIncome'), value: totalReceived, icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: t('totalExpenses'), value: totalSpent, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { label: t('totalIncome'), value: totalIncome, icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: t('totalExpenses'), value: totalExpenses, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
     { label: t('netSavings'), value: totalSavings, icon: PiggyBank, color: 'text-violet-400', bg: 'bg-violet-500/10' },
   ];
 

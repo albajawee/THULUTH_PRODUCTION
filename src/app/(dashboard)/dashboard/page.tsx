@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
+import { useTransferTotal } from '@/lib/hooks/useTransferTotal';
 import { useTransactions } from '@/lib/hooks/useTransactions';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useIncome } from '@/lib/hooks/useIncome';
@@ -19,10 +20,19 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const t = useTranslations('dashboard');
   const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent } = useFunds(user?.uid ?? null);
+  const { totalTransferred } = useTransferTotal(user?.uid ?? null);
   const { transactions, loading: txLoading } = useTransactions(user?.uid ?? null, 10);
   const { activeGoals } = useGoals(user?.uid ?? null);
   const { incomes } = useIncome(user?.uid ?? null, 100);
   const { expenses } = useExpenses(user?.uid ?? null, undefined, 100);
+
+  // The fund counters track money in/out of each fund, so moving money between funds shows up in
+  // both — correct per fund, but it makes an internal move look like income AND an expense once
+  // summed across all four. These headline figures are account-level, so the transfers come back
+  // out. Clamped at zero: a negative "total income" from drifted data would read as a far more
+  // alarming bug than the small inaccuracy it would be reporting.
+  const totalIncome = Math.max(0, totalReceived - totalTransferred);
+  const totalExpenses = Math.max(0, totalSpent - totalTransferred);
 
   if (fundsLoading) {
     return (
@@ -52,8 +62,8 @@ export default function DashboardPage() {
 
       <SummaryBar
         totalBalance={totalBalance}
-        totalReceived={totalReceived}
-        totalSpent={totalSpent}
+        totalIncome={totalIncome}
+        totalExpenses={totalExpenses}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
