@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { FieldValue, FieldPath } from 'firebase-admin/firestore';
 import { adminDb } from '../firebase/admin';
 import { requireUser } from '../auth/session';
 import {
@@ -134,7 +135,28 @@ export async function renameFundCategory(rawData: unknown) {
     await batch.commit();
   }
 
-  // 2. Only now update the list, keeping the category in its existing position.
+  // 2. Move the analytics aggregate from the old label to the new one. Totals don't change — the
+  //    same expenses, the same amounts — only the bucket they're attributed to. `from`'s sums are
+  //    added onto `to` (which may already exist if this is a case-fix merge onto itself — it
+  //    can't, collisions are rejected above, so `to` is always new here), then the `from` key is
+  //    removed. If the stats doc doesn't exist yet (pre-backfill), the delete is a no-op and the
+  //    backfill will build the correct map from scratch.
+  const movedTotal = matching.docs.reduce((s, d) => s + ((d.data().amount as number) ?? 0), 0);
+  const statsRef = userRef.collection('expense_stats').doc(fundType);
+  if (matching.size > 0) {
+    await statsRef.set(
+      {
+        categories: { [to]: { total: FieldValue.increment(movedTotal), count: FieldValue.increment(matching.size) } },
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  }
+  await statsRef
+    .update(new FieldPath('categories', from), FieldValue.delete())
+    .catch(() => {/* stats doc not created yet — backfill will populate it */});
+
+  // 3. Only now update the list, keeping the category in its existing position.
   const next = [...current];
   next[index] = to;
 

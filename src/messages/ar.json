@@ -74,7 +74,16 @@
     "quickAddTitle": "إضافة سريعة لمصروف",
     "quickAddButton": "إضافة مصروف",
     "quickAddFailed": "تعذّر حفظ هذا المصروف",
-    "totalTransferred": "إجمالي المُحوَّل"
+    "totalTransferred": "إجمالي المُحوَّل",
+    "loadMore": "عرض المزيد",
+    "loadingMore": "جارٍ التحميل…",
+    "analytics": "التحليلات",
+    "totalExpenses": "إجمالي المصاريف",
+    "transactions": "المعاملات",
+    "largestCategory": "أكبر فئة",
+    "avgExpense": "متوسط المصروف",
+    "highestExpense": "أعلى مصروف",
+    "otherCategories": "أخرى"
   },
   "income": {
     "title": "الدخل",

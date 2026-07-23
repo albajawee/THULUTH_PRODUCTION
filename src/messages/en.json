@@ -74,7 +74,16 @@
     "quickAddTitle": "Quick add expense",
     "quickAddButton": "Add expense",
     "quickAddFailed": "Could not save that expense",
-    "totalTransferred": "Total Transferred"
+    "totalTransferred": "Total Transferred",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…",
+    "analytics": "Analytics",
+    "totalExpenses": "Total Expenses",
+    "transactions": "Transactions",
+    "largestCategory": "Largest Category",
+    "avgExpense": "Average Expense",
+    "highestExpense": "Highest Expense",
+    "otherCategories": "Other"
   },
   "income": {
     "title": "Income",

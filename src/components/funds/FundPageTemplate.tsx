@@ -10,7 +10,7 @@ import { FUND_CONFIG } from '@/lib/constants/fund-config';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { ExpenseForm } from '@/components/funds/ExpenseForm';
 import { ExpenseHistory } from '@/components/funds/ExpenseHistory';
-import { CategoryBreakdown } from '@/components/funds/CategoryBreakdown';
+import { ExpenseAnalytics } from '@/components/funds/ExpenseAnalytics';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ interface FundPageTemplateProps {
 export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) {
   const { user } = useAuth();
   const { funds } = useFunds(user?.uid ?? null);
-  const { expenses, loading } = useExpenses(user?.uid ?? null, fundType);
+  const { expenses, loading, hasMore, loadingMore, loadMore } = useExpenses(user?.uid ?? null, fundType);
   const { currency } = useUserSettings();
   const t = useTranslations('funds');
   const tf = useTranslations('nav');
@@ -79,12 +79,19 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
 
       {children}
 
+      {/* Analytics reads its own maintained aggregate — independent of the history query below. */}
+      <ExpenseAnalytics fundType={fundType} />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <ExpenseForm fundType={fundType} />
-        <CategoryBreakdown expenses={expenses} />
+        <ExpenseHistory
+          expenses={expenses}
+          loading={loading}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+          onLoadMore={loadMore}
+        />
       </div>
-
-      <ExpenseHistory expenses={expenses} loading={loading} />
     </div>
   );
 }

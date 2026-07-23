@@ -65,7 +65,25 @@ export async function addExpense(rawData: unknown) {
     createdAt: now,
   });
 
-  // 4. Audit log
+  // 4. Roll up the per-fund expense aggregate that powers the analytics view. Same batch, so the
+  //    rollup can never drift from the expense that caused it. Nested increments under a set-merge
+  //    apply at any depth; the category label is a literal map key (dots in it are safe here —
+  //    merge treats object keys as field names, not dot-paths).
+  batch.set(
+    userRef.collection('expense_stats').doc(fundType),
+    {
+      fundType,
+      totalSpent: FieldValue.increment(amount),
+      count: FieldValue.increment(1),
+      categories: {
+        [category]: { total: FieldValue.increment(amount), count: FieldValue.increment(1) },
+      },
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  // 5. Audit log
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
     id: auditRef.id,
@@ -127,6 +145,25 @@ export async function reverseExpense(rawData: unknown) {
       balance: FieldValue.increment(expense.amount),
       totalSpent: FieldValue.increment(-expense.amount),
       totalReceived: FieldValue.increment(0),
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  // Undo the analytics rollup too, mirroring addExpense exactly. Uses the category stored ON the
+  // expense, which category renames keep current — so this always decrements the right bucket.
+  batch.set(
+    userRef.collection('expense_stats').doc(expense.fundType),
+    {
+      fundType: expense.fundType,
+      totalSpent: FieldValue.increment(-expense.amount),
+      count: FieldValue.increment(-1),
+      categories: {
+        [expense.category]: {
+          total: FieldValue.increment(-expense.amount),
+          count: FieldValue.increment(-1),
+        },
+      },
       updatedAt: now,
     },
     { merge: true }

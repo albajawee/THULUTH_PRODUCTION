@@ -11,14 +11,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Receipt, Trash2 } from 'lucide-react';
+import { Receipt, Trash2, Loader2 } from 'lucide-react';
 
 interface ExpenseHistoryProps {
   expenses: Expense[];
   loading?: boolean;
+  /** True when more expenses exist beyond the ones currently loaded. */
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
-export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
+export function ExpenseHistory({ expenses, loading, hasMore, loadingMore, onLoadMore }: ExpenseHistoryProps) {
   const { currency } = useUserSettings();
   const t = useTranslations('funds');
   const tf = useTranslations('nav');
@@ -97,6 +101,21 @@ export function ExpenseHistory({ expenses, loading }: ExpenseHistoryProps) {
                 </div>
               </div>
             ))}
+
+            {hasMore && onLoadMore && (
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={loadingMore}
+                  onClick={onLoadMore}
+                >
+                  {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loadingMore ? t('loadingMore') : t('loadMore')}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
