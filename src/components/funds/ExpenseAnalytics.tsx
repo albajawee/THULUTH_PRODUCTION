@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Receipt, Hash, Trophy, Scale, Flame, Tag, type LucideIcon } from 'lucide-react';
+import { Receipt, Hash, Trophy, Scale, Flame, Tag, AlertTriangle, type LucideIcon } from 'lucide-react';
 import { FundType } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { iconForCategory } from '@/lib/utils/category-icons';
@@ -31,9 +31,17 @@ interface Segment {
   icon: LucideIcon;
 }
 
-export function ExpenseAnalytics({ fundType }: { fundType: FundType }) {
+export function ExpenseAnalytics({
+  fundType,
+  fundTotalSpent = 0,
+}: {
+  fundType: FundType;
+  /** The fund's own spent counter, already loaded by the page. Used only to tell a genuinely
+      empty fund apart from a rollup that failed to load or hasn't been backfilled. */
+  fundTotalSpent?: number;
+}) {
   const { user } = useAuth();
-  const { stats, maxAmount, loading } = useExpenseStats(user?.uid ?? null, fundType);
+  const { stats, maxAmount, loading, error } = useExpenseStats(user?.uid ?? null, fundType);
   const { currency } = useUserSettings();
   const t = useTranslations('funds');
   const { resolvedTheme } = useTheme();
@@ -63,6 +71,25 @@ export function ExpenseAnalytics({ fundType }: { fundType: FundType }) {
         .filter(([, v]) => v.total > 0)
         .sort((a, b) => b[1].total - a[1].total)
     : [];
+
+  // The rollup couldn't be read (rule not deployed), or it reads empty while the fund clearly has
+  // spending (not yet backfilled). Either way it is NOT "no expenses" — say so honestly instead of
+  // implying the fund is empty. A genuinely empty fund (fundTotalSpent === 0) still shows below.
+  if (error || (count === 0 && fundTotalSpent > 0)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t('analytics')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">{t('analyticsUnavailable')}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (count === 0 || ranked.length === 0) {
     return (

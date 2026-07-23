@@ -21,10 +21,15 @@ export function useExpenseStats(userId: string | null, fundType: FundType) {
   const [stats, setStats] = useState<FundExpenseStats | null>(null);
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  // Distinguishes "the rollup could not be read" (permission denied, e.g. the read rule isn't
+  // deployed) from "the rollup says zero". Both used to collapse into an empty state, which made a
+  // deploy/backfill gap look like a fund with no expenses.
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
+    setError(false);
 
     const statsRef = doc(db, 'users', userId, 'expense_stats', fundType);
     const unsubStats = onSnapshot(
@@ -38,9 +43,10 @@ export function useExpenseStats(userId: string | null, fundType: FundType) {
           categories: d?.categories ?? {},
           updatedAt: d?.updatedAt ?? '',
         });
+        setError(false);
         setLoading(false);
       },
-      () => setLoading(false)
+      () => { setError(true); setLoading(false); }
     );
 
     const topQ = query(
@@ -58,5 +64,5 @@ export function useExpenseStats(userId: string | null, fundType: FundType) {
     return () => { unsubStats(); unsubTop(); };
   }, [userId, fundType]);
 
-  return { stats, maxAmount, loading };
+  return { stats, maxAmount, loading, error };
 }

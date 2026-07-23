@@ -83,7 +83,8 @@
     "largestCategory": "Largest Category",
     "avgExpense": "Average Expense",
     "highestExpense": "Highest Expense",
-    "otherCategories": "Other"
+    "otherCategories": "Other",
+    "analyticsUnavailable": "Spending analytics aren't ready for this fund yet. If this persists, the analytics data needs to be rebuilt."
   },
   "income": {
     "title": "Income",

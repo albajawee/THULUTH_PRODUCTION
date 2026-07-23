@@ -79,8 +79,10 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
 
       {children}
 
-      {/* Analytics reads its own maintained aggregate — independent of the history query below. */}
-      <ExpenseAnalytics fundType={fundType} />
+      {/* Analytics reads its own maintained aggregate — independent of the history query below.
+          The fund's spent counter is passed only so the component can tell an empty fund from an
+          unbuilt/denied rollup. */}
+      <ExpenseAnalytics fundType={fundType} fundTotalSpent={fund?.totalSpent ?? 0} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ExpenseForm fundType={fundType} />

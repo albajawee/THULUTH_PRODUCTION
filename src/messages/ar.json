@@ -83,7 +83,8 @@
     "largestCategory": "أكبر فئة",
     "avgExpense": "متوسط المصروف",
     "highestExpense": "أعلى مصروف",
-    "otherCategories": "أخرى"
+    "otherCategories": "أخرى",
+    "analyticsUnavailable": "تحليلات الإنفاق لهذا الصندوق غير جاهزة بعد. إذا استمر ذلك، فيجب إعادة بناء بيانات التحليلات."
   },
   "income": {
     "title": "الدخل",
