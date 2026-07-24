@@ -65,7 +65,9 @@ export async function recordDonation(rawData: unknown) {
     type: 'donation',
     fundType: 'charity',
     amount: -amount,
-    description: `Donation to: ${recipient}`,
+    // Recipient is optional; fall back to the category so the ledger row is never a dangling
+    // "Donation to: ".
+    description: recipient ? `Donation to: ${recipient}` : `Donation: ${category}`,
     relatedId: donationId,
     relatedType: 'donation',
     createdAt: now,
@@ -146,7 +148,9 @@ export async function reverseDonation(rawData: unknown) {
     type: 'reversal',
     fundType: 'charity',
     amount: donation.amount, // returning to the fund
-    description: `Reversed donation to: ${donation.recipient}`,
+    description: donation.recipient
+      ? `Reversed donation to: ${donation.recipient}`
+      : `Reversed donation: ${donation.category ?? ''}`.trimEnd(),
     relatedId: donationId,
     relatedType: 'donation',
     createdAt: now,

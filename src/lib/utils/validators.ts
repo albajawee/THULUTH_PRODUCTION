@@ -63,10 +63,9 @@ export const addDonationSchema = z.object({
   amount: z
     .number({ error: 'Amount must be a number' })
     .positive('Amount must be positive'),
-  recipient: z
-    .string()
-    .min(1, 'Recipient is required')
-    .max(100, 'Recipient is too long'),
+  // Optional — a donation is identified by its category; a named recipient is a nicety, not
+  // required. Empty-string-means-absent, same as description (see addExpenseSchema.description).
+  recipient: z.string().max(100, 'Recipient is too long'),
   // Same shape as an expense's category, drawn from the charity fund's list in Settings — which
   // existed and was editable long before anything read it.
   category: z.string().min(1, 'Category is required'),

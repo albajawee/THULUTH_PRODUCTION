@@ -266,7 +266,8 @@
     "deleteConfirm": "Delete donation",
     "returnedToast": "Returned {amount} to the charity fund",
     "deleteFailedToast": "Could not delete the donation",
-    "selectCategory": "Select a category"
+    "selectCategory": "Select a category",
+    "donation": "Donation"
   },
   "auth": {
     "login": "Sign In",

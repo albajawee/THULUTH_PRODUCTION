@@ -266,7 +266,8 @@
     "deleteConfirm": "حذف التبرع",
     "returnedToast": "تمت إعادة {amount} إلى صندوق الصدقة",
     "deleteFailedToast": "تعذّر حذف التبرع",
-    "selectCategory": "اختر فئة"
+    "selectCategory": "اختر فئة",
+    "donation": "تبرّع"
   },
   "auth": {
     "login": "تسجيل الدخول",

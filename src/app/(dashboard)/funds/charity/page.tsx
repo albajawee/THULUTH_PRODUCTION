@@ -116,7 +116,8 @@ export default function CharityPage() {
                     className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{donation.recipient}</p>
+                      {/* Recipient is optional — fall back to the category so the row has a title. */}
+                      <p className="text-sm font-medium truncate">{donation.recipient || donation.category || t('donation')}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {/* Absent on donations recorded before categories existed. */}
                         {donation.category && (
