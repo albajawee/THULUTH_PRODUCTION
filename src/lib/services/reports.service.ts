@@ -364,7 +364,8 @@ function buildInsights(
   // Charity share
   if (d.totalIncome > 0 && d.totalDonations > 0) {
     const charityShare = (d.totalDonations / d.totalIncome) * 100;
-    out.push({ tone: 'good', text: t('insightCharity', { pct: p(charityShare) }) });
+    const pct = p(charityShare) === 0 ? '<1' : String(p(charityShare));
+    out.push({ tone: 'good', text: t('insightCharity', { pct }) });
   }
 
   // Comparison vs previous period

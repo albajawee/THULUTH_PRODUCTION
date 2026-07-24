@@ -35,7 +35,19 @@
     "complete": "مكتمل",
     "left": "متبقٍ",
     "noTransactions": "لا توجد معاملات بعد. أضف دخلاً للبدء.",
-    "noGoals": "لا توجد أهداف نشطة. أنشئ هدفًا لبدء التتبع."
+    "noGoals": "لا توجد أهداف نشطة. أنشئ هدفًا لبدء التتبع.",
+    "transactions": "المعاملات",
+    "avgExpense": "متوسط المصروف",
+    "largestExpense": "أكبر مصروف",
+    "mostActive": "الأكثر نشاطاً",
+    "nTransactions": "{count} معاملة",
+    "thisMonthSpending": "هذا الشهر",
+    "vsLastMonth": "مقارنةً بالشهر الماضي",
+    "topCategories": "أهم الفئات",
+    "monthComparison": "هذا الشهر مقابل الماضي",
+    "otherCategories": "أخرى",
+    "noExpenseData": "لا توجد بيانات مصاريف بعد",
+    "totalSpending": "إجمالي الإنفاق"
   },
   "funds": {
     "stability": {
@@ -73,7 +85,18 @@
     "expenseDeleteFailed": "تعذّر حذف المصروف",
     "quickAddTitle": "إضافة سريعة لمصروف",
     "quickAddButton": "إضافة مصروف",
-    "quickAddFailed": "تعذّر حفظ هذا المصروف"
+    "quickAddFailed": "تعذّر حفظ هذا المصروف",
+    "totalTransferred": "إجمالي المُحوَّل",
+    "loadMore": "عرض المزيد",
+    "loadingMore": "جارٍ التحميل…",
+    "analytics": "التحليلات",
+    "totalExpenses": "إجمالي المصاريف",
+    "transactions": "المعاملات",
+    "largestCategory": "أكبر فئة",
+    "avgExpense": "متوسط المصروف",
+    "highestExpense": "أعلى مصروف",
+    "otherCategories": "أخرى",
+    "analyticsUnavailable": "تحليلات الإنفاق لهذا الصندوق غير جاهزة بعد. إذا استمر ذلك، فيجب إعادة بناء بيانات التحليلات."
   },
   "income": {
     "title": "الدخل",
@@ -242,7 +265,9 @@
     "deleteDesc": "سيعيد هذا {amount} إلى صندوق الصدقة. يحتفظ الدفتر بقيد للتبرع وللعكس معًا.",
     "deleteConfirm": "حذف التبرع",
     "returnedToast": "تمت إعادة {amount} إلى صندوق الصدقة",
-    "deleteFailedToast": "تعذّر حذف التبرع"
+    "deleteFailedToast": "تعذّر حذف التبرع",
+    "selectCategory": "اختر فئة",
+    "donation": "تبرّع"
   },
   "auth": {
     "login": "تسجيل الدخول",

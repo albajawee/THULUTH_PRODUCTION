@@ -42,27 +42,30 @@ export async function transferFunds(rawData: unknown) {
     createdAt: now,
   } satisfies Transfer);
 
-  // 2. Decrement source fund
+  // 2. Decrement source fund.
+  //    `transferredOut`, NOT `totalSpent`: moving money between your own funds is not spending it.
+  //    Counting it as spending overstated every "Total Spent" figure in the app by the amount
+  //    moved, and made the money look consumed when it was only relocated.
   batch.set(
     userRef.collection('funds').doc(fromFund),
     {
       id: fromFund,
       balance: FieldValue.increment(-amount),
-      totalSpent: FieldValue.increment(amount),
-      totalReceived: FieldValue.increment(0),
+      transferredOut: FieldValue.increment(amount),
       updatedAt: now,
     },
     { merge: true }
   );
 
-  // 3. Increment destination fund
+  // 3. Increment destination fund. Transfers in DO count as received — the fund really did gain
+  //    the money — and are also tracked separately so account-level income can exclude them.
   batch.set(
     userRef.collection('funds').doc(toFund),
     {
       id: toFund,
       balance: FieldValue.increment(amount),
       totalReceived: FieldValue.increment(amount),
-      totalSpent: FieldValue.increment(0),
+      transferredIn: FieldValue.increment(amount),
       updatedAt: now,
     },
     { merge: true }
@@ -163,14 +166,14 @@ export async function reverseTransfer(rawData: unknown) {
   // Remove from the working list.
   batch.delete(transferRef);
 
-  // Undo destination: take the amount back out.
+  // Undo destination: take the amount back out. Mirrors transferFunds exactly.
   batch.set(
     userRef.collection('funds').doc(toFund),
     {
       id: toFund,
       balance: FieldValue.increment(-amount),
       totalReceived: FieldValue.increment(-amount),
-      totalSpent: FieldValue.increment(0),
+      transferredIn: FieldValue.increment(-amount),
       updatedAt: now,
     },
     { merge: true }
@@ -182,8 +185,7 @@ export async function reverseTransfer(rawData: unknown) {
     {
       id: fromFund,
       balance: FieldValue.increment(amount),
-      totalSpent: FieldValue.increment(-amount),
-      totalReceived: FieldValue.increment(0),
+      transferredOut: FieldValue.increment(-amount),
       updatedAt: now,
     },
     { merge: true }

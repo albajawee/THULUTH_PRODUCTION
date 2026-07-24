@@ -43,6 +43,18 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Expense stats — maintained rollups, read only (written by server)
+      match /expense_stats/{fundId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+
+      // Aggregates (e.g. monthly rollup) — maintained, read only (written by server)
+      match /aggregates/{docId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+
       // Goals — read only (written by server)
       match /goals/{goalId} {
         allow read: if isOwner(userId);

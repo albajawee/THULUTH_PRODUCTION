@@ -10,6 +10,7 @@ import { reverseDonation } from '@/lib/services/charity.service';
 import { DonationForm } from '@/components/charity/DonationForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HandHeart, Trash2 } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function CharityPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-5">
             <p className="text-xs text-muted-foreground">{tfund('balance')}</p>
@@ -73,6 +74,17 @@ export default function CharityPage() {
           <CardContent className="pt-5">
             <p className="text-xs text-muted-foreground">{t('totalDonated')}</p>
             <p className="text-xl font-bold text-rose-400">{formatCurrency(totalDonated, currency)}</p>
+          </CardContent>
+        </Card>
+        {/* Charity can be transferred out of like any other fund; that is not giving. */}
+        <Card>
+          <CardContent className="pt-5">
+            <p className="text-xs text-muted-foreground">{tfund('totalTransferred')}</p>
+            {charityFund ? (
+              <p className="text-xl font-bold text-sky-400">
+                {formatCurrency(charityFund.transferredOut ?? 0, currency)}
+              </p>
+            ) : <Skeleton className="h-7 w-32 mt-1" />}
           </CardContent>
         </Card>
       </div>
@@ -104,12 +116,21 @@ export default function CharityPage() {
                     className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{donation.recipient}</p>
-                      {/* Description is optional — don't render a dangling separator without it. */}
-                      <p className="text-xs text-muted-foreground">
-                        {donation.description ? `${donation.description} · ` : ''}
-                        {formatDate(donation.date)}
-                      </p>
+                      {/* Recipient is optional — fall back to the category so the row has a title. */}
+                      <p className="text-sm font-medium truncate">{donation.recipient || donation.category || t('donation')}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {/* Absent on donations recorded before categories existed. */}
+                        {donation.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {donation.category}
+                          </Badge>
+                        )}
+                        {/* Description is optional — don't render a dangling separator without it. */}
+                        <span className="text-xs text-muted-foreground">
+                          {donation.description ? `${donation.description} · ` : ''}
+                          {formatDate(donation.date)}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 ml-3 shrink-0">
                       <span className="text-sm font-semibold text-rose-400 tabular-nums">

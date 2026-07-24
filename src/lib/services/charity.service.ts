@@ -5,6 +5,7 @@ import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireUser } from '../auth/session';
 import { addDonationSchema } from '../utils/validators';
+import { bumpMonthlyAggregate } from './aggregates';
 import { Donation } from '../types';
 import { revalidatePath } from 'next/cache';
 
@@ -16,7 +17,7 @@ export async function recordDonation(rawData: unknown) {
     return { success: false, error: parsed.error.flatten().fieldErrors };
   }
 
-  const { amount, recipient, description, date } = parsed.data;
+  const { amount, recipient, category, description, date } = parsed.data;
   const now = new Date().toISOString();
   const userRef = adminDb.collection('users').doc(userId);
 
@@ -37,6 +38,7 @@ export async function recordDonation(rawData: unknown) {
     userId,
     amount,
     recipient,
+    category,
     description,
     date,
     createdAt: now,
@@ -63,13 +65,18 @@ export async function recordDonation(rawData: unknown) {
     type: 'donation',
     fundType: 'charity',
     amount: -amount,
-    description: `Donation to: ${recipient}`,
+    // Recipient is optional; fall back to the category so the ledger row is never a dangling
+    // "Donation to: ".
+    description: recipient ? `Donation to: ${recipient}` : `Donation: ${category}`,
     relatedId: donationId,
     relatedType: 'donation',
     createdAt: now,
   });
 
-  // 4. Audit log
+  // 4. Monthly rollup — a donation is money out, bucketed by its own date.
+  bumpMonthlyAggregate(batch, userRef, date, { spending: amount }, now);
+
+  // 5. Audit log
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
     id: auditRef.id,
@@ -77,7 +84,7 @@ export async function recordDonation(rawData: unknown) {
     action: 'donation_recorded',
     entityType: 'donation',
     entityId: donationId,
-    after: { amount, recipient, description, date },
+    after: { amount, recipient, category, description, date },
     createdAt: now,
   });
 
@@ -131,6 +138,9 @@ export async function reverseDonation(rawData: unknown) {
     { merge: true }
   );
 
+  // Undo the monthly rollup, mirroring recordDonation.
+  bumpMonthlyAggregate(batch, userRef, donation.date, { spending: -donation.amount }, now);
+
   const txRef = userRef.collection('transactions').doc();
   batch.set(txRef, {
     id: txRef.id,
@@ -138,7 +148,9 @@ export async function reverseDonation(rawData: unknown) {
     type: 'reversal',
     fundType: 'charity',
     amount: donation.amount, // returning to the fund
-    description: `Reversed donation to: ${donation.recipient}`,
+    description: donation.recipient
+      ? `Reversed donation to: ${donation.recipient}`
+      : `Reversed donation: ${donation.category ?? ''}`.trimEnd(),
     relatedId: donationId,
     relatedType: 'donation',
     createdAt: now,

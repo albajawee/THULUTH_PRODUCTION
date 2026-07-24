@@ -25,7 +25,11 @@ export function SummaryBar({ totalBalance, totalIncome, totalExpenses }: Summary
   const items = [
     { label: t('totalBalance'), value: totalBalance, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     { label: t('totalIncome'), value: totalIncome, icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: t('totalExpenses'), value: totalExpenses, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    // "Total Spending" — money out (expenses + donations), NOT the narrower expense-transaction
+    // total in the insights row. This is the figure Net Savings reconciles against
+    // (income - spending == balance), so it must stay money-out; the label makes that explicit and
+    // stops it colliding with the analytics "Total Expenses".
+    { label: t('totalSpending'), value: totalExpenses, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
     { label: t('netSavings'), value: totalSavings, icon: PiggyBank, color: 'text-violet-400', bg: 'bg-violet-500/10' },
   ];
 

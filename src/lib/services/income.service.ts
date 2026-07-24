@@ -5,6 +5,7 @@ import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireUser } from '../auth/session';
 import { distributeIncome } from '../utils/calculations';
+import { bumpMonthlyAggregate } from './aggregates';
 import { addIncomeSchema } from '../utils/validators';
 import { FundType, Income } from '../types';
 import { revalidatePath } from 'next/cache';
@@ -73,7 +74,10 @@ export async function addIncome(rawData: unknown) {
     });
   }
 
-  // 4. Audit log
+  // 4. Monthly rollup for the dashboard trend (bucketed by the income's own date).
+  bumpMonthlyAggregate(batch, userRef, date, { income: amount }, now);
+
+  // 5. Audit log
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
     id: auditRef.id,
@@ -122,7 +126,7 @@ export async function reverseIncome(rawData: unknown) {
     return { success: false, error: 'Income not found' };
   }
   const income = snap.data() as Income;
-  const { distributions, source } = income;
+  const { distributions, source, date: incomeDate } = income;
 
   // Every fund must still hold at least the share this income put into it.
   const fundSnaps = await Promise.all(
@@ -172,6 +176,9 @@ export async function reverseIncome(rawData: unknown) {
       createdAt: now,
     });
   }
+
+  // Undo the monthly rollup, mirroring addIncome.
+  bumpMonthlyAggregate(batch, userRef, incomeDate, { income: -income.amount }, now);
 
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
