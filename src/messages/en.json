@@ -337,5 +337,21 @@
     "saving": "Saving…",
     "working": "Working…",
     "notAuthenticated": "Not authenticated"
+  },
+  "pwa": {
+    "installTitle": "Install THULUTH",
+    "installDescription": "Add THULUTH to your device for a faster, full-screen, app-like experience.",
+    "installAction": "Install",
+    "installDismiss": "Not now",
+    "installIOS": "Tap the Share button, then \"Add to Home Screen\" to install THULUTH.",
+    "updateTitle": "Update available",
+    "updateDescription": "A new version of THULUTH is ready.",
+    "updateAction": "Reload"
+  },
+  "offline": {
+    "badge": "No connection",
+    "title": "You're offline",
+    "description": "THULUTH can't reach the network right now. Check your connection and try again — your data is safe.",
+    "retry": "Try again"
   }
 }

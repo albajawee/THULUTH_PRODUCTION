@@ -12,8 +12,29 @@ const DEFAULT_REDIRECT = '/dashboard';
  * server actions and protected pages. Per Next's docs, proxy "should not be used as a full session
  * management or authorization solution".
  */
+/**
+ * PWA assets and the offline fallback must resolve to their real content in every
+ * auth state: the service worker precaches them while the user may be logged out,
+ * and browsers refetch the manifest/SW while logged in. Routing them through the
+ * auth branches below would redirect them (to /login or /dashboard), so they get
+ * an early, unconditional pass-through.
+ */
+function isPwaPassthrough(pathname: string): boolean {
+  return (
+    pathname === '/offline' ||
+    pathname === '/sw.js' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/apple-touch-icon.png' ||
+    pathname.startsWith('/icon-')
+  );
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isPwaPassthrough(pathname)) {
+    return NextResponse.next();
+  }
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
   const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
