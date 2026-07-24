@@ -35,7 +35,18 @@
     "complete": "complete",
     "left": "left",
     "noTransactions": "No transactions yet. Add income to get started.",
-    "noGoals": "No active goals. Create one to start tracking."
+    "noGoals": "No active goals. Create one to start tracking.",
+    "transactions": "Transactions",
+    "avgExpense": "Average Expense",
+    "largestExpense": "Largest Expense",
+    "mostActive": "Most Active",
+    "nTransactions": "{count} transactions",
+    "thisMonthSpending": "This Month",
+    "vsLastMonth": "vs last month",
+    "topCategories": "Top Categories",
+    "monthComparison": "This Month vs Last",
+    "otherCategories": "Other",
+    "noExpenseData": "No expense data yet"
   },
   "funds": {
     "stability": {

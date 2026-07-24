@@ -5,33 +5,42 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useFunds } from '@/lib/hooks/useFunds';
 import { useTransactions } from '@/lib/hooks/useTransactions';
 import { useGoals } from '@/lib/hooks/useGoals';
-import { useIncome } from '@/lib/hooks/useIncome';
-import { useExpenses } from '@/lib/hooks/useExpenses';
-import { useDonations } from '@/lib/hooks/useDonations';
+import { useExpenseStatsAll } from '@/lib/hooks/useExpenseStatsAll';
+import { useMonthlyAggregate } from '@/lib/hooks/useMonthlyAggregate';
+import { useLargestExpense } from '@/lib/hooks/useLargestExpense';
 import { FundCard } from '@/components/dashboard/FundCard';
 import { SummaryBar } from '@/components/dashboard/SummaryBar';
+import { ExpenseInsights } from '@/components/dashboard/ExpenseInsights';
+import { CategoryOverview } from '@/components/dashboard/CategoryOverview';
+import { MonthlyTrendChart } from '@/components/dashboard/MonthlyTrendChart';
+import { MonthComparisonChart } from '@/components/dashboard/MonthComparisonChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { ActiveGoals } from '@/components/dashboard/ActiveGoals';
-import { MonthlyChart } from '@/components/dashboard/MonthlyChart';
 import { FUND_ORDER } from '@/lib/constants/fund-config';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/**
+ * Dashboard — a constant-time financial overview.
+ *
+ * Every widget reads a maintained aggregate (funds, expense_stats, the monthly rollup) or a single
+ * bounded query (largest expense, recent transactions). Nothing scans the expenses/incomes/
+ * donations collections, so the page cost is flat no matter how much history exists.
+ */
 export default function DashboardPage() {
   const { user } = useAuth();
   const t = useTranslations('dashboard');
+
   const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent, totalTransferredIn } =
     useFunds(user?.uid ?? null);
-  const { transactions, loading: txLoading } = useTransactions(user?.uid ?? null, 10);
+  const { combined } = useExpenseStatsAll(user?.uid ?? null);
+  const { series } = useMonthlyAggregate(user?.uid ?? null, 6);
+  const { expense: largestExpense } = useLargestExpense(user?.uid ?? null);
+  const { transactions } = useTransactions(user?.uid ?? null, 10);
   const { activeGoals } = useGoals(user?.uid ?? null);
-  const { incomes } = useIncome(user?.uid ?? null, 100);
-  const { expenses } = useExpenses(user?.uid ?? null, undefined, 100);
-  const { donations } = useDonations(user?.uid ?? null, 100);
 
-  // `totalSpent` no longer includes transfers (they go to `transferredOut`), so spending needs no
-  // correction. Receipts still do: a fund genuinely receives a transfer, but at account level that
-  // money is not new income — it already existed in another fund. Clamped at zero because a
-  // negative "total income" from drifted data would read as a far more alarming bug than the
-  // inaccuracy it would be reporting.
+  // Transfers are already excluded from totalSpent (they go to transferredOut). Receipts still need
+  // it: a transfer genuinely lands in a fund's totalReceived, but at account level that money is
+  // not new income — it already existed elsewhere. Clamped so drifted data can't show negative.
   const totalIncome = Math.max(0, totalReceived - totalTransferredIn);
   const totalExpenses = totalSpent;
 
@@ -39,14 +48,10 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
         </div>
       </div>
     );
@@ -61,11 +66,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <SummaryBar
-        totalBalance={totalBalance}
-        totalIncome={totalIncome}
-        totalExpenses={totalExpenses}
-      />
+      <SummaryBar totalBalance={totalBalance} totalIncome={totalIncome} totalExpenses={totalExpenses} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {FUND_ORDER.map((fundId, i) => {
@@ -75,8 +76,15 @@ export default function DashboardPage() {
         })}
       </div>
 
+      {combined && <ExpenseInsights combined={combined} largestExpense={largestExpense} series={series} />}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MonthlyChart incomes={incomes} expenses={expenses} donations={donations} />
+        <MonthlyTrendChart series={series} />
+        {combined && <CategoryOverview combined={combined} />}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthComparisonChart series={series} />
         <ActiveGoals
           goals={activeGoals}
           fundBalances={{

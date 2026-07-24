@@ -5,6 +5,7 @@ import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireUser } from '../auth/session';
 import { addDonationSchema } from '../utils/validators';
+import { bumpMonthlyAggregate } from './aggregates';
 import { Donation } from '../types';
 import { revalidatePath } from 'next/cache';
 
@@ -70,7 +71,10 @@ export async function recordDonation(rawData: unknown) {
     createdAt: now,
   });
 
-  // 4. Audit log
+  // 4. Monthly rollup — a donation is money out, bucketed by its own date.
+  bumpMonthlyAggregate(batch, userRef, date, { spending: amount }, now);
+
+  // 5. Audit log
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
     id: auditRef.id,
@@ -131,6 +135,9 @@ export async function reverseDonation(rawData: unknown) {
     },
     { merge: true }
   );
+
+  // Undo the monthly rollup, mirroring recordDonation.
+  bumpMonthlyAggregate(batch, userRef, donation.date, { spending: -donation.amount }, now);
 
   const txRef = userRef.collection('transactions').doc();
   batch.set(txRef, {

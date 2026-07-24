@@ -5,6 +5,7 @@ import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireUser } from '../auth/session';
 import { addExpenseSchema } from '../utils/validators';
+import { bumpMonthlyAggregate } from './aggregates';
 import { Expense, FundType } from '../types';
 import { revalidatePath } from 'next/cache';
 
@@ -83,7 +84,10 @@ export async function addExpense(rawData: unknown) {
     { merge: true }
   );
 
-  // 5. Audit log
+  // 5. Monthly rollup (money out, bucketed by the expense's own date).
+  bumpMonthlyAggregate(batch, userRef, date, { spending: amount }, now);
+
+  // 6. Audit log
   const auditRef = userRef.collection('audit_logs').doc();
   batch.set(auditRef, {
     id: auditRef.id,
@@ -168,6 +172,9 @@ export async function reverseExpense(rawData: unknown) {
     },
     { merge: true }
   );
+
+  // Undo the monthly rollup, mirroring addExpense (bucketed by the expense's own date).
+  bumpMonthlyAggregate(batch, userRef, expense.date, { spending: -expense.amount }, now);
 
   // Append the reversal to the immutable ledger (original expense row is left intact).
   const txRef = userRef.collection('transactions').doc();
