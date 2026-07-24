@@ -46,7 +46,8 @@
     "topCategories": "أهم الفئات",
     "monthComparison": "هذا الشهر مقابل الماضي",
     "otherCategories": "أخرى",
-    "noExpenseData": "لا توجد بيانات مصاريف بعد"
+    "noExpenseData": "لا توجد بيانات مصاريف بعد",
+    "totalSpending": "إجمالي الإنفاق"
   },
   "funds": {
     "stability": {

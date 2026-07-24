@@ -46,7 +46,8 @@
     "topCategories": "Top Categories",
     "monthComparison": "This Month vs Last",
     "otherCategories": "Other",
-    "noExpenseData": "No expense data yet"
+    "noExpenseData": "No expense data yet",
+    "totalSpending": "Total Spending"
   },
   "funds": {
     "stability": {
