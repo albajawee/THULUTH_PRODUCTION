@@ -2,6 +2,7 @@ import 'server-only';
 import { adminDb } from '../firebase/admin';
 import { FundType, UserProfile } from '../types';
 import { DEFAULT_CATEGORIES_BY_FUND } from '../constants/fund-categories';
+import { DEFAULT_CURRENCY } from '../constants/currency';
 
 /**
  * User/fund bootstrap.
@@ -73,8 +74,11 @@ export async function ensureUserBootstrapped(
       uid: userId,
       displayName: details.displayName?.trim() || details.email?.split('@')[0] || 'User',
       email: details.email ?? '',
-      selectedCurrency: 'SAR',
+      selectedCurrency: DEFAULT_CURRENCY,
       selectedLanguage: 'en',
+      // On by default — a user who picks a currency with a note base wants whole notes without
+      // having to discover a setting first.
+      roundToNoteBase: true,
       categories: DEFAULT_CATEGORIES_BY_FUND,
       createdAt: now,
       updatedAt: now,

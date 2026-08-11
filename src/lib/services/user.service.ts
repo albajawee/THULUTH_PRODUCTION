@@ -48,6 +48,11 @@ export async function updateUserSettings(rawData: unknown) {
   if (parsed.data.selectedLanguage) {
     jar.set('locale', parsed.data.selectedLanguage, { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
   }
+  // Same reason as `currency`: the income preview must round the way this user asked from the
+  // first render, not flip once the Firestore snapshot lands.
+  if (parsed.data.roundToNoteBase !== undefined) {
+    jar.set('noteBase', String(parsed.data.roundToNoteBase), { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
+  }
 
   revalidatePath('/settings');
   return { success: true };

@@ -1,10 +1,12 @@
+import { DEFAULT_CURRENCY } from '../constants/currency';
+
 /**
  * Formats a number as currency using Intl.NumberFormat.
- * Falls back to 'USD' if no currency is provided.
+ * Falls back to DEFAULT_CURRENCY if no currency is provided.
  */
 export function formatCurrency(
   amount: number,
-  currency = 'SAR',
+  currency = DEFAULT_CURRENCY,
   locale = 'en-US'
 ): string {
   return new Intl.NumberFormat(locale, {

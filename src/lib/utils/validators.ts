@@ -13,6 +13,25 @@ export const addIncomeSchema = z.object({
   note: z.string().max(500, 'Note is too long').optional(),
 });
 
+/**
+ * The income rules, plus the note-base rule when the user's currency has one and they've left the
+ * setting on: the amount itself must be a whole number of notes.
+ *
+ * Rejecting the entry is what keeps the split honest. If an amount that isn't a multiple of the
+ * note base were accepted, the leftover sliver (under 250 IQD) could not go into any fund without
+ * recreating exactly the unspendable figure the rounding exists to prevent. So the amount is
+ * refused at the door and the user is told to turn the setting off if they really need it.
+ *
+ * `step` comes from the stored profile on the server, never from the request.
+ */
+export function addIncomeSchemaFor(step: number) {
+  if (step <= 1) return addIncomeSchema;
+  return addIncomeSchema.refine((data) => data.amount % step === 0, {
+    path: ['amount'],
+    message: `Amount must be a multiple of ${step} while whole-note splitting is on`,
+  });
+}
+
 export const addExpenseSchema = z.object({
   fundType: z.enum(['stability', 'growth', 'life', 'charity']),
   category: z.string().min(1, 'Category is required'),
@@ -78,6 +97,7 @@ export const updateUserSettingsSchema = z.object({
   displayName: z.string().min(1, 'Name is required').max(100).optional(),
   selectedCurrency: z.string().min(1).max(10).optional(),
   selectedLanguage: z.enum(['en', 'ar']).optional(),
+  roundToNoteBase: z.boolean().optional(),
 });
 
 export const updateFundCategoriesSchema = z.object({

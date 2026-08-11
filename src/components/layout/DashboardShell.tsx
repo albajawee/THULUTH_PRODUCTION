@@ -9,12 +9,17 @@ import { BottomNav } from '@/components/layout/BottomNav';
 export function DashboardShell({
   children,
   initialCurrency,
+  initialRoundToNoteBase,
 }: {
   children: ReactNode;
   initialCurrency?: string;
+  initialRoundToNoteBase?: boolean;
 }) {
   return (
-    <UserSettingsProvider initialCurrency={initialCurrency}>
+    <UserSettingsProvider
+      initialCurrency={initialCurrency}
+      initialRoundToNoteBase={initialRoundToNoteBase}
+    >
       <div className="flex min-h-screen bg-background">
         <Sidebar />
         <div className="flex flex-col flex-1 min-w-0">

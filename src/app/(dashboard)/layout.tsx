@@ -1,12 +1,24 @@
 import { ReactNode } from 'react';
 import { cookies } from 'next/headers';
 import { DashboardShell } from '@/components/layout/DashboardShell';
+import { DEFAULT_CURRENCY } from '@/lib/constants/currency';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  // Read the last-saved currency server-side so the first paint already shows it. Without this the
-  // provider starts at the SAR default and flips to the real currency once the Firestore snapshot
+  // Read the last-saved preferences server-side so the first paint already shows them. Without this
+  // the provider starts at the defaults and flips to the real values once the Firestore snapshot
   // arrives — a visible flash on every refresh.
-  const initialCurrency = (await cookies()).get('currency')?.value ?? 'SAR';
+  const jar = await cookies();
+  const initialCurrency = jar.get('currency')?.value ?? DEFAULT_CURRENCY;
+  // Only an explicit 'false' turns it off; no cookie means the setting was never changed, and the
+  // default is on.
+  const initialRoundToNoteBase = jar.get('noteBase')?.value !== 'false';
 
-  return <DashboardShell initialCurrency={initialCurrency}>{children}</DashboardShell>;
+  return (
+    <DashboardShell
+      initialCurrency={initialCurrency}
+      initialRoundToNoteBase={initialRoundToNoteBase}
+    >
+      {children}
+    </DashboardShell>
+  );
 }

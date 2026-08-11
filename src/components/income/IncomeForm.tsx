@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation';
 import { addIncomeSchema, AddIncomeInput } from '@/lib/utils/validators';
 import { addIncome } from '@/lib/services/income.service';
 import { distributeIncome } from '@/lib/utils/calculations';
+import { noteBaseFor } from '@/lib/constants/currency';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { toInputDate } from '@/lib/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +23,7 @@ import { DistributionPreview } from './DistributionPreview';
 export function IncomeForm() {
   const { user } = useAuth();
   const router = useRouter();
+  const { currency, roundToNoteBase } = useUserSettings();
   const t = useTranslations('income');
   const tc = useTranslations('common');
 
@@ -36,10 +39,27 @@ export function IncomeForm() {
   });
 
   const watchedAmount = watch('amount');
-  const distribution = watchedAmount > 0 ? distributeIncome(watchedAmount) : null;
+  // Same step the server will use (it reads the same two settings from the profile), so what the
+  // preview shows is what gets committed.
+  const step = noteBaseFor(currency, roundToNoteBase);
+
+  // An amount that isn't a whole number of notes has no honest split — the sub-note remainder
+  // couldn't go to any fund. Rather than quietly dropping it, the entry is refused and the reason
+  // named, since the user is the only one who can decide to turn the setting off.
+  const violatesNoteBase =
+    step > 1 && typeof watchedAmount === 'number' && watchedAmount > 0 && watchedAmount % step !== 0;
+  // Never suggests 0 — for an amount below one note the closest valid entry is one note.
+  const nearestValidAmount = violatesNoteBase
+    ? Math.max(step, Math.round(watchedAmount / step) * step)
+    : 0;
+
+  const distribution =
+    watchedAmount > 0 && !violatesNoteBase ? distributeIncome(watchedAmount, step) : null;
 
   async function onSubmit(data: AddIncomeInput) {
     if (!user) { toast.error(tc('notAuthenticated')); return; }
+    // Belt and braces: the button is disabled in this state, and the server refuses it regardless.
+    if (violatesNoteBase) return;
     const result = await addIncome(data);
     if (result.success) {
       toast.success(t('addedToast'));
@@ -72,8 +92,18 @@ export function IncomeForm() {
                   />
                 )}
               />
-              {errors.amount && (
-                <p className="text-sm text-destructive">{errors.amount.message}</p>
+              {violatesNoteBase ? (
+                <p className="text-sm text-destructive">
+                  {t('noteBaseRequired', {
+                    base: step,
+                    currency,
+                    nearest: nearestValidAmount,
+                  })}
+                </p>
+              ) : (
+                errors.amount && (
+                  <p className="text-sm text-destructive">{errors.amount.message}</p>
+                )
               )}
             </div>
 
@@ -108,7 +138,7 @@ export function IncomeForm() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting || violatesNoteBase}>
               {isSubmitting ? t('processing') : t('addIncome')}
             </Button>
           </form>
@@ -116,7 +146,11 @@ export function IncomeForm() {
       </Card>
 
       {distribution && (
-        <DistributionPreview distribution={distribution} total={watchedAmount} />
+        <DistributionPreview
+          distribution={distribution}
+          total={watchedAmount}
+          currency={currency}
+        />
       )}
     </div>
   );

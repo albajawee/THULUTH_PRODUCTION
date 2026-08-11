@@ -5,9 +5,10 @@ import { adminDb } from '../firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireUser } from '../auth/session';
 import { distributeIncome } from '../utils/calculations';
+import { noteBaseFor, DEFAULT_CURRENCY } from '../constants/currency';
 import { bumpMonthlyAggregate } from './aggregates';
-import { addIncomeSchema } from '../utils/validators';
-import { FundType, Income } from '../types';
+import { addIncomeSchemaFor } from '../utils/validators';
+import { FundType, Income, UserProfile } from '../types';
 import { revalidatePath } from 'next/cache';
 
 const FUNDS: FundType[] = ['stability', 'growth', 'life', 'charity'];
@@ -15,18 +16,27 @@ const FUNDS: FundType[] = ['stability', 'growth', 'life', 'charity'];
 export async function addIncome(rawData: unknown) {
   const { ownerId: userId } = await requireUser();
 
-  const parsed = addIncomeSchema.safeParse(rawData);
+  const batch = adminDb.batch();
+  const userRef = adminDb.collection('users').doc(userId);
+
+  // The note base comes from the stored profile, never from the request: the client sends only the
+  // amount, so a tampered or stale payload can't change how the money is split. The browser runs
+  // the same `distributeIncome` for its preview, so the two agree by construction.
+  const profile = (await userRef.get()).data() as UserProfile | undefined;
+  const step = noteBaseFor(profile?.selectedCurrency ?? DEFAULT_CURRENCY, profile?.roundToNoteBase);
+
+  // Validated against that step, so an amount that isn't a whole number of notes is refused here
+  // too — the form blocks it first, but this is the check that actually decides.
+  const parsed = addIncomeSchemaFor(step).safeParse(rawData);
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors };
   }
 
   const { amount, source, date, note } = parsed.data;
-  const distributions = distributeIncome(amount);
-  const now = new Date().toISOString();
-  const incomeId = adminDb.collection('users').doc(userId).collection('incomes').doc().id;
 
-  const batch = adminDb.batch();
-  const userRef = adminDb.collection('users').doc(userId);
+  const distributions = distributeIncome(amount, step);
+  const now = new Date().toISOString();
+  const incomeId = userRef.collection('incomes').doc().id;
 
   // 1. Write income document
   const incomeRef = userRef.collection('incomes').doc(incomeId);
@@ -85,7 +95,9 @@ export async function addIncome(rawData: unknown) {
     action: 'income_added',
     entityType: 'income',
     entityId: incomeId,
-    after: { amount, source, date, distributions },
+    // `noteBase` is logged because it explains any gap between `amount` and the four shares: at
+    // step 250 the sub-step remainder stays unallocated by design.
+    after: { amount, source, date, distributions, noteBase: step },
     createdAt: now,
   });
 

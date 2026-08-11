@@ -20,7 +20,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { CategoryManager } from '@/components/settings/CategoryManager';
+import { CURRENCY_NOTE_BASE, DEFAULT_CURRENCY, hasNoteBase } from '@/lib/constants/currency';
 import { User, Sliders, Palette, Sun, Moon } from 'lucide-react';
 
 const CURRENCIES = [
@@ -72,9 +74,15 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
 
   const {
-    register, handleSubmit, setValue,
+    register, handleSubmit, setValue, watch,
     formState: { isSubmitting },
   } = useForm<UpdateUserSettingsInput>({ resolver: zodResolver(updateUserSettingsSchema) });
+
+  // Watched, not just read once: the note-rounding row below only applies to some currencies, so it
+  // has to appear and disappear as the currency select changes — before the form is even saved.
+  const selectedCurrency = watch('selectedCurrency') ?? DEFAULT_CURRENCY;
+  const roundToNoteBase = watch('roundToNoteBase') ?? true;
+  const noteBase = CURRENCY_NOTE_BASE[selectedCurrency];
 
   useEffect(() => setMounted(true), []);
 
@@ -86,6 +94,8 @@ export default function SettingsPage() {
         setValue('displayName', p.displayName);
         setValue('selectedCurrency', p.selectedCurrency);
         setValue('selectedLanguage', p.selectedLanguage);
+        // Absent on profiles created before this setting existed, which means on.
+        setValue('roundToNoteBase', p.roundToNoteBase !== false);
       }
       setLoading(false);
     });
@@ -149,8 +159,8 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>{t('currency')}</Label>
               <Select
-                defaultValue={profile?.selectedCurrency ?? 'SAR'}
-                onValueChange={(v) => setValue('selectedCurrency', v ?? undefined)}
+                defaultValue={profile?.selectedCurrency ?? DEFAULT_CURRENCY}
+                onValueChange={(v) => setValue('selectedCurrency', v ?? undefined, { shouldDirty: true })}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -160,6 +170,31 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/*
+              Only offered for currencies whose smallest note is bigger than one unit — for the rest
+              there is nothing to round to, so the row would be a switch that does nothing.
+            */}
+            {hasNoteBase(selectedCurrency) && (
+              <div className="flex items-start justify-between gap-4 rounded-lg border border-border/50 p-3">
+                <div className="space-y-1">
+                  <Label htmlFor="roundToNoteBase" className="cursor-pointer">
+                    {t('roundToNoteBase', { base: noteBase, currency: selectedCurrency })}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('roundToNoteBaseDesc', { base: noteBase })}
+                  </p>
+                </div>
+                <Switch
+                  id="roundToNoteBase"
+                  checked={roundToNoteBase}
+                  onCheckedChange={(checked) =>
+                    setValue('roundToNoteBase', checked, { shouldDirty: true })
+                  }
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>{t('language')}</Label>
               <Select

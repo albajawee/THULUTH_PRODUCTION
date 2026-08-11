@@ -6,32 +6,40 @@ import { db } from '../firebase/config';
 import { useAuth } from './useAuth';
 import { FundType } from '../types';
 import { categoriesForFund, DEFAULT_CATEGORIES_BY_FUND } from '../constants/fund-categories';
+import { DEFAULT_CURRENCY } from '../constants/currency';
 
 interface UserSettingsContextType {
   currency: string;
   language: string;
+  /** Round income shares to the currency's smallest banknote. Meaningless for currencies with no
+   *  note base; pass it to `noteBaseFor` rather than branching on it directly. */
+  roundToNoteBase: boolean;
   /** Resolved categories per fund (user's own list, or defaults when unset). Always populated. */
   categories: Record<FundType, string[]>;
 }
 
 const UserSettingsContext = createContext<UserSettingsContextType>({
-  currency: 'SAR',
+  currency: DEFAULT_CURRENCY,
   language: 'en',
+  roundToNoteBase: true,
   categories: DEFAULT_CATEGORIES_BY_FUND,
 });
 
 export function UserSettingsProvider({
   children,
-  initialCurrency = 'SAR',
+  initialCurrency = DEFAULT_CURRENCY,
+  initialRoundToNoteBase = true,
 }: {
   children: ReactNode;
   initialCurrency?: string;
+  initialRoundToNoteBase?: boolean;
 }) {
   const { user } = useAuth();
   // Seeded from the server-read `currency` cookie so first paint matches the saved currency (no
   // flash). The Firestore snapshot below stays the source of truth and corrects it if they differ.
   const [currency, setCurrency] = useState(initialCurrency);
   const [language, setLanguage] = useState('en');
+  const [roundToNoteBase, setRoundToNoteBase] = useState(initialRoundToNoteBase);
   const [categories, setCategories] = useState<Record<FundType, string[]>>(DEFAULT_CATEGORIES_BY_FUND);
 
   useEffect(() => {
@@ -41,6 +49,8 @@ export function UserSettingsProvider({
         const data = snap.data();
         if (data.selectedCurrency) setCurrency(data.selectedCurrency);
         if (data.selectedLanguage) setLanguage(data.selectedLanguage);
+        // Absent means "never chosen" for profiles predating this setting, which is on.
+        setRoundToNoteBase(data.roundToNoteBase !== false);
         const stored = data.categories as Partial<Record<FundType, string[]>> | undefined;
         setCategories({
           stability: categoriesForFund(stored, 'stability'),
@@ -54,7 +64,7 @@ export function UserSettingsProvider({
   }, [user]);
 
   return (
-    <UserSettingsContext.Provider value={{ currency, language, categories }}>
+    <UserSettingsContext.Provider value={{ currency, language, roundToNoteBase, categories }}>
       {children}
     </UserSettingsContext.Provider>
   );
