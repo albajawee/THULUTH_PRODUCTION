@@ -44,8 +44,10 @@ export function UserSettingsProvider({
 
   useEffect(() => {
     if (!user) return;
-    const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) {
+    const unsub = onSnapshot(
+      doc(db, 'users', user.uid),
+      (snap) => {
+        if (!snap.exists()) return;
         const data = snap.data();
         if (data.selectedCurrency) setCurrency(data.selectedCurrency);
         if (data.selectedLanguage) setLanguage(data.selectedLanguage);
@@ -58,8 +60,11 @@ export function UserSettingsProvider({
           life: categoriesForFund(stored, 'life'),
           charity: categoriesForFund(stored, 'charity'),
         });
-      }
-    });
+      },
+      // If this listener dies the values simply stay as seeded from the cookie, which is the last
+      // saved state — never a hard 'SAR' fallback that contradicts what the user picked.
+      () => {}
+    );
     return unsub;
   }, [user]);
 

@@ -23,15 +23,22 @@ export function useFunds(userId: string | null) {
     }
 
     const unsubscribers = FUND_IDS.map((fundId) =>
-      onSnapshot(doc(db, 'users', userId, 'funds', fundId), (snap) => {
-        if (snap.exists()) {
-          setFunds((prev) => ({
-            ...(prev ?? ({} as Record<FundType, Fund>)),
-            [fundId]: snap.data() as Fund,
-          }));
-        }
-        setLoading(false);
-      })
+      onSnapshot(
+        doc(db, 'users', userId, 'funds', fundId),
+        (snap) => {
+          if (snap.exists()) {
+            setFunds((prev) => ({
+              ...(prev ?? ({} as Record<FundType, Fund>)),
+              [fundId]: snap.data() as Fund,
+            }));
+          }
+          setLoading(false);
+        },
+        // Without this the listener could fail and leave `loading` true forever, which the
+        // dashboard renders as skeleton tiles that never resolve. Better to drop out of loading
+        // and show the zero state than to spin with no way out.
+        () => setLoading(false)
+      )
     );
 
     return () => unsubscribers.forEach((u) => u());

@@ -83,13 +83,34 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirst(req));
 });
 
+/**
+ * Why the network-first handlers below are raced against a clock.
+ *
+ * `fetch` only rejects when the connection is *known* to be dead. On a weak signal it stalls
+ * instead — the request sits open for as long as the browser will allow, which is far longer than
+ * anyone will wait. A plain `await fetch(req)` therefore has no lower bound: the catch block that
+ * serves the cache is never reached, and the page hangs with a usable copy sitting in the cache
+ * unread. Racing a timer bounds the wait and lets the cached copy through.
+ *
+ * The losing fetch is deliberately not aborted — it keeps running and refreshes the cache, so the
+ * next read is current.
+ */
+const DATA_TIMEOUT_MS = 4000;
+// Navigations get longer: their only fallback is the offline shell, a dead end, so it is worth
+// waiting a while longer for the real page rather than bailing out early on a merely slow link.
+const NAVIGATION_TIMEOUT_MS = 10000;
+
+function afterTimeout(ms) {
+  return new Promise((resolve) => setTimeout(() => resolve(null), ms));
+}
+
 async function networkFirstNavigation(req) {
-  try {
-    return await fetch(req);
-  } catch {
-    const cached = await caches.match(OFFLINE_URL, { ignoreSearch: true });
-    return cached || new Response('Offline', { status: 503, statusText: 'Offline' });
-  }
+  const network = fetch(req).catch(() => null);
+  const res = await Promise.race([network, afterTimeout(NAVIGATION_TIMEOUT_MS)]);
+  if (res) return res;
+
+  const cached = await caches.match(OFFLINE_URL, { ignoreSearch: true });
+  return cached || new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
 async function staleWhileRevalidate(req) {
@@ -106,12 +127,23 @@ async function staleWhileRevalidate(req) {
 
 async function networkFirst(req) {
   const cache = await caches.open(CACHE);
-  try {
-    const res = await fetch(req);
-    if (res && res.status === 200 && res.type === 'basic') cache.put(req, res.clone());
-    return res;
-  } catch {
-    const cached = await cache.match(req);
-    return cached || new Response('', { status: 504, statusText: 'Offline' });
+  const cached = await cache.match(req);
+
+  const network = fetch(req)
+    .then((res) => {
+      if (res && res.status === 200 && res.type === 'basic') cache.put(req, res.clone());
+      return res;
+    })
+    .catch(() => null);
+
+  // With a cached copy in hand there is no reason to wait out a stalled connection — serve what we
+  // have and let the fetch above refresh it in the background.
+  if (cached) {
+    const res = await Promise.race([network, afterTimeout(DATA_TIMEOUT_MS)]);
+    return res || cached;
   }
+
+  // Nothing cached: the network is the only source, so wait for it to settle either way.
+  const res = await network;
+  return res || new Response('', { status: 504, statusText: 'Offline' });
 }
