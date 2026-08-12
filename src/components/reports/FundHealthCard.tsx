@@ -67,6 +67,16 @@ export function FundHealthCard({ fundHealth }: { fundHealth: FundHealth[] }) {
                   {t('overspentBy', { amount: formatCurrency(-h.net, currency) })}
                 </p>
               )}
+              {/* Sits outside the spent/received figures above — see FundHealth in reports.service.
+                  No feature-flag check needed: with ROSCA off these are always zero. */}
+              {(h.roscaOut > 0 || h.roscaIn > 0) && (
+                <p className="mt-0.5 text-xs text-indigo-400">
+                  {t('roscaFlow', {
+                    out: formatCurrency(h.roscaOut, currency),
+                    in: formatCurrency(h.roscaIn, currency),
+                  })}
+                </p>
+              )}
             </div>
           );
         })}

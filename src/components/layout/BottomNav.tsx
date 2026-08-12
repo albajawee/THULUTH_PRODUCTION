@@ -12,10 +12,12 @@ import {
   MoreHorizontal,
   ArrowLeftRight,
   BarChart3,
+  Users,
   Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FUND_ORDER, FUND_CONFIG } from '@/lib/constants/fund-config';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { QuickAddExpense } from '@/components/mobile/QuickAddExpense';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
@@ -32,6 +34,13 @@ const MORE_LINKS = [
 ] as const;
 
 /**
+ * Optional, and it goes in MORE_LINKS rather than TABS on purpose: the bar splits TABS with
+ * hard-coded `.slice(0, 2)` / `.slice(2)` around the centre quick-add button, so inserting a
+ * conditional entry there would silently shunt an existing tab to the other side of the FAB.
+ */
+const ROSCA_LINK = { href: '/rosca', key: 'rosca', icon: Users } as const;
+
+/**
  * Mobile navigation. The desktop Sidebar is `hidden md:flex`, which previously left phones with no
  * navigation at all — only /dashboard (the landing route) and /settings (via the avatar menu) were
  * reachable; funds, income, goals, transfers and reports had no link on any screen under 768px.
@@ -44,6 +53,11 @@ export function BottomNav() {
   const t = useTranslations('nav');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const { roscaEnabled } = useUserSettings();
+
+  const moreLinks = roscaEnabled
+    ? [MORE_LINKS[0], MORE_LINKS[1], ROSCA_LINK, MORE_LINKS[2]]
+    : [...MORE_LINKS];
 
   return (
     <>
@@ -127,7 +141,7 @@ export function BottomNav() {
               {t('tools')}
             </p>
             <div className="flex flex-col">
-              {MORE_LINKS.map(({ href, key, icon: Icon }) => (
+              {moreLinks.map(({ href, key, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}

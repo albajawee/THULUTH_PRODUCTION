@@ -10,15 +10,18 @@ export function DashboardShell({
   children,
   initialCurrency,
   initialRoundToNoteBase,
+  initialRoscaEnabled,
 }: {
   children: ReactNode;
   initialCurrency?: string;
   initialRoundToNoteBase?: boolean;
+  initialRoscaEnabled?: boolean;
 }) {
   return (
     <UserSettingsProvider
       initialCurrency={initialCurrency}
       initialRoundToNoteBase={initialRoundToNoteBase}
+      initialRoscaEnabled={initialRoscaEnabled}
     >
       <div className="flex min-h-screen bg-background">
         <Sidebar />

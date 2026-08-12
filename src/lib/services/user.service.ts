@@ -53,6 +53,11 @@ export async function updateUserSettings(rawData: unknown) {
   if (parsed.data.roundToNoteBase !== undefined) {
     jar.set('noteBase', String(parsed.data.roundToNoteBase), { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
   }
+  // So the sidebar renders with the ROSCA entry already in place on the next request, rather than
+  // popping in once the Firestore snapshot arrives.
+  if (parsed.data.roscaEnabled !== undefined) {
+    jar.set('rosca', String(parsed.data.roscaEnabled), { path: '/', maxAge: ONE_YEAR, sameSite: 'lax' });
+  }
 
   revalidatePath('/settings');
   return { success: true };

@@ -82,6 +82,8 @@ export default function SettingsPage() {
   // has to appear and disappear as the currency select changes — before the form is even saved.
   const selectedCurrency = watch('selectedCurrency') ?? DEFAULT_CURRENCY;
   const roundToNoteBase = watch('roundToNoteBase') ?? true;
+  // Inverted default: ROSCA is hidden until asked for, so absent reads as off.
+  const roscaEnabled = watch('roscaEnabled') ?? false;
   const noteBase = CURRENCY_NOTE_BASE[selectedCurrency];
 
   useEffect(() => setMounted(true), []);
@@ -96,6 +98,7 @@ export default function SettingsPage() {
         setValue('selectedLanguage', p.selectedLanguage);
         // Absent on profiles created before this setting existed, which means on.
         setValue('roundToNoteBase', p.roundToNoteBase !== false);
+        setValue('roscaEnabled', p.roscaEnabled === true);
       }
       setLoading(false);
     });
@@ -207,6 +210,19 @@ export default function SettingsPage() {
                   <SelectItem value="ar">العربية</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Unconditional, unlike the note-base row above: any currency can run a savings group. */}
+            <div className="flex items-start justify-between gap-4 rounded-lg border border-border/50 p-3">
+              <div className="space-y-1">
+                <Label htmlFor="roscaEnabled" className="cursor-pointer">{t('rosca')}</Label>
+                <p className="text-xs text-muted-foreground">{t('roscaDesc')}</p>
+              </div>
+              <Switch
+                id="roscaEnabled"
+                checked={roscaEnabled}
+                onCheckedChange={(checked) => setValue('roscaEnabled', checked, { shouldDirty: true })}
+              />
             </div>
           </CardContent>
         </Card>

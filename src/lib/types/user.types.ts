@@ -13,6 +13,12 @@ export interface UserProfile {
    * carry it — read it through `noteBaseFor`, which treats absent as on.
    */
   roundToNoteBase?: boolean;
+  /**
+   * Show the ROSCA (rotating savings group) feature. Off by default and **absent means off** — the
+   * opposite polarity to `roundToNoteBase` above, so every read of this field is `=== true`, never
+   * `!== false`. Most users have no such arrangement and shouldn't see the feature at all.
+   */
+  roscaEnabled?: boolean;
   /** User-managed expense categories per fund. Absent/empty for a fund falls back to defaults. */
   categories?: Partial<Record<FundType, string[]>>;
   createdAt: string;
@@ -24,4 +30,5 @@ export interface UpdateUserSettingsInput {
   selectedCurrency?: string;
   selectedLanguage?: 'en' | 'ar';
   roundToNoteBase?: boolean;
+  roscaEnabled?: boolean;
 }

@@ -73,6 +73,18 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Rotating savings groups (ROSCA) — read only
+      match /rosca_groups/{groupId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+
+      // ROSCA contributions & payouts — read only
+      match /rosca_entries/{entryId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+
       // Audit logs — read only, never writable by client
       match /audit_logs/{logId} {
         allow read: if isOwner(userId);

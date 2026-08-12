@@ -12,11 +12,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Only an explicit 'false' turns it off; no cookie means the setting was never changed, and the
   // default is on.
   const initialRoundToNoteBase = jar.get('noteBase')?.value !== 'false';
+  // Opposite polarity to the line above: this feature is off unless explicitly turned on, so only
+  // an explicit 'true' enables it and a missing cookie means off.
+  const initialRoscaEnabled = jar.get('rosca')?.value === 'true';
 
   return (
     <DashboardShell
       initialCurrency={initialCurrency}
       initialRoundToNoteBase={initialRoundToNoteBase}
+      initialRoscaEnabled={initialRoscaEnabled}
     >
       {children}
     </DashboardShell>

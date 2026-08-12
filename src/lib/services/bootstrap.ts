@@ -79,6 +79,10 @@ export async function ensureUserBootstrapped(
       // On by default — a user who picks a currency with a note base wants whole notes without
       // having to discover a setting first.
       roundToNoteBase: true,
+      // Off by default — a rotating savings group is an instrument most users don't have, so the
+      // feature stays out of the way until it's asked for. Written explicitly rather than left
+      // absent so the field is discoverable in Firestore.
+      roscaEnabled: false,
       categories: DEFAULT_CATEGORIES_BY_FUND,
       createdAt: now,
       updatedAt: now,

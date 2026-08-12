@@ -13,7 +13,13 @@ export type AuditAction =
   | 'expense_reversed'
   | 'funds_initialized'
   | 'settings_updated'
-  | 'category_renamed';
+  | 'category_renamed'
+  | 'rosca_group_created'
+  | 'rosca_status_changed'
+  | 'rosca_payout_round_set'
+  | 'rosca_contribution_marked'
+  | 'rosca_payout_recorded'
+  | 'rosca_entry_reversed';
 
 export interface AuditLog {
   id: string;
