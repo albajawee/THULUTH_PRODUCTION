@@ -7,9 +7,16 @@
  * the old rule need correcting once.
  *
  * The correction is a RECOMPUTATION, not an adjustment: every counter is rebuilt from the
- * incomes / expenses / donations / transfers collections, which is exact because reversing any of
- * those deletes its source document (see the reverse* actions). That makes this script idempotent
- * — running it twice changes nothing the second time.
+ * incomes / expenses / donations / transfers / rosca_entries collections, which is exact because
+ * reversing any of those deletes its source document (see the reverse* actions). That makes this
+ * script idempotent — running it twice changes nothing the second time. It is also why reversal
+ * must stay a delete and never become a `voided: true` flag.
+ *
+ * ROSCA note: `rosca_entries` must be included even though the feature postdates this script. The
+ * balance check below reconstructs `balance` from every counter, so a user with any ROSCA activity
+ * would otherwise fail it and be skipped — turning the safety net into noise that hides real
+ * corruption. A contribution reduces balance via `roscaOut`; a payout raises it and counts inside
+ * `totalReceived` as well as `roscaIn`, exactly as `rosca.service.ts` writes it.
  *
  * Safety: `balance` is never written. It is only recomputed and compared; if the recomputed
  * balance disagrees with the stored one for any fund, that user is REPORTED AND SKIPPED, because a
@@ -60,8 +67,8 @@ async function run() {
 
   for (const user of users.docs) {
     const userRef = user.ref;
-    const [fundsSnap, incomes, expenses, donations, transfers] = await Promise.all(
-      ['funds', 'incomes', 'expenses', 'donations', 'transfers'].map((c) =>
+    const [fundsSnap, incomes, expenses, donations, transfers, roscaEntries] = await Promise.all(
+      ['funds', 'incomes', 'expenses', 'donations', 'transfers', 'rosca_entries'].map((c) =>
         userRef.collection(c).get()
       )
     );
@@ -71,6 +78,8 @@ async function run() {
     const spent = zero();
     const tIn = zero();
     const tOut = zero();
+    const roscaOut = zero();
+    const roscaIn = zero();
 
     for (const d of incomes.docs) {
       const dist = d.data().distributions ?? {};
@@ -87,20 +96,36 @@ async function run() {
       tIn[t.toFund] += t.amount ?? 0;
       tOut[t.fromFund] += t.amount ?? 0;
     }
+    // A group's opening position (`priorContributed` / `priorReceived` on the group doc) is
+    // deliberately NOT read here: it records money moved before tracking began, which never touched
+    // a fund counter and must not be reconstructed into one.
+    for (const d of roscaEntries.docs) {
+      const e = d.data();
+      if (!FUNDS.includes(e.fundType)) continue;
+      if (e.type === 'contribution') {
+        roscaOut[e.fundType] += e.amount ?? 0;
+      } else {
+        received[e.fundType] += e.amount ?? 0;
+        roscaIn[e.fundType] += e.amount ?? 0;
+      }
+    }
 
     const stored = Object.fromEntries(fundsSnap.docs.map((d) => [d.id, d.data()]));
     console.log(`user ${user.id}`);
 
     // Verify before touching anything: recomputed balance must match what is stored.
+    // `tIn` and `roscaIn` are already inside `received`, so only the outflows subtract here.
+    const balanceFor = (f) => received[f] - spent[f] - tOut[f] - roscaOut[f];
+
     const mismatches = FUNDS.filter((f) => {
       if (!stored[f]) return false;
-      return received[f] - spent[f] - tOut[f] !== stored[f].balance;
+      return balanceFor(f) !== stored[f].balance;
     });
 
     if (mismatches.length > 0) {
       console.log('  SKIPPED — recomputed balance disagrees with stored balance:');
       for (const f of mismatches) {
-        const expected = received[f] - spent[f] - tOut[f];
+        const expected = balanceFor(f);
         console.log(`    ${f}: stored ${money(stored[f].balance)} vs recomputed ${money(expected)}`);
       }
       console.log('  Nothing written for this user. Investigate before re-running.\n');
@@ -119,6 +144,8 @@ async function run() {
         totalSpent: spent[f],
         transferredIn: tIn[f],
         transferredOut: tOut[f],
+        roscaOut: roscaOut[f],
+        roscaIn: roscaIn[f],
       };
       const diffs = Object.entries(next).filter(([k, v]) => (cur[k] ?? 0) !== v);
 

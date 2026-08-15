@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { FUND_ORDER } from '@/lib/constants/fund-config';
 import { FUND_CONFIG } from '@/lib/constants/fund-config';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import {
   LayoutDashboard,
   ArrowLeftRight,
   BarChart3,
   Target,
+  Users,
   Wallet,
 } from 'lucide-react';
 
@@ -25,9 +27,19 @@ const REPORT_ITEMS = [
   { href: '/reports', key: 'reports', icon: BarChart3 },
 ] as const;
 
+/** Optional — only listed when the user has turned ROSCA on in Settings. */
+const ROSCA_ITEM = { href: '/rosca', key: 'rosca', icon: Users } as const;
+
 export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations('nav');
+  const { roscaEnabled } = useUserSettings();
+
+  // Seeded from the `rosca` cookie server-side, so the entry is already in place on first paint
+  // rather than appearing once the Firestore snapshot lands.
+  const toolItems = roscaEnabled
+    ? [...REPORT_ITEMS, ROSCA_ITEM]
+    : [...REPORT_ITEMS];
 
   return (
     <aside className="hidden md:flex print:hidden flex-col w-64 min-h-screen bg-card border-r border-border/50 p-4">
@@ -88,7 +100,7 @@ export function Sidebar() {
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             {t('tools')}
           </p>
-          {REPORT_ITEMS.map(({ href, key, icon: Icon }) => (
+          {toolItems.map(({ href, key, icon: Icon }) => (
             <Link
               key={href}
               href={href}

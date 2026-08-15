@@ -7,6 +7,10 @@ export type TransactionType =
   | 'transfer_out'
   | 'goal_allocation'
   | 'donation'
+  // Neither spending nor income — a rotating savings group is net zero over a cycle. See
+  // `rosca.types` and the `roscaOut`/`roscaIn` fund counters.
+  | 'rosca_contribution'
+  | 'rosca_payout'
   | 'reversal'
   | 'adjustment';
 
@@ -15,7 +19,8 @@ export type RelatedEntityType =
   | 'expense'
   | 'transfer'
   | 'goal_allocation'
-  | 'donation';
+  | 'donation'
+  | 'rosca';
 
 export interface Transaction {
   id: string;

@@ -16,6 +16,8 @@ import { MonthlyTrendChart } from '@/components/dashboard/MonthlyTrendChart';
 import { MonthComparisonChart } from '@/components/dashboard/MonthComparisonChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { ActiveGoals } from '@/components/dashboard/ActiveGoals';
+import { RoscaSummaryCard } from '@/components/dashboard/RoscaSummaryCard';
+import { useUserSettings } from '@/lib/hooks/UserSettingsProvider';
 import { FUND_ORDER } from '@/lib/constants/fund-config';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -30,8 +32,11 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const t = useTranslations('dashboard');
 
-  const { funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent, totalTransferredIn } =
-    useFunds(user?.uid ?? null);
+  const { roscaEnabled } = useUserSettings();
+  const {
+    funds, loading: fundsLoading, totalBalance, totalReceived, totalSpent,
+    totalTransferredIn, totalRoscaIn,
+  } = useFunds(user?.uid ?? null);
   const { combined } = useExpenseStatsAll(user?.uid ?? null);
   const { series } = useMonthlyAggregate(user?.uid ?? null, 6);
   const { expense: largestExpense } = useLargestExpense(user?.uid ?? null);
@@ -41,7 +46,10 @@ export default function DashboardPage() {
   // Transfers are already excluded from totalSpent (they go to transferredOut). Receipts still need
   // it: a transfer genuinely lands in a fund's totalReceived, but at account level that money is
   // not new income — it already existed elsewhere. Clamped so drifted data can't show negative.
-  const totalIncome = Math.max(0, totalReceived - totalTransferredIn);
+  //
+  // ROSCA payouts are subtracted for the same reason and are likewise absent from totalSpent (they
+  // go to roscaOut): a payout is the user's own contributions coming back round, not money earned.
+  const totalIncome = Math.max(0, totalReceived - totalTransferredIn - totalRoscaIn);
   const totalExpenses = totalSpent;
 
   if (fundsLoading) {
@@ -95,6 +103,8 @@ export default function DashboardPage() {
           }}
         />
       </div>
+
+      {roscaEnabled && <RoscaSummaryCard />}
 
       <RecentTransactions transactions={transactions} />
     </div>

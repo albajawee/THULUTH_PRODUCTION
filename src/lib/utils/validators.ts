@@ -93,11 +93,81 @@ export const addDonationSchema = z.object({
   date: z.string().min(1, 'Date is required'),
 });
 
+/**
+ * A rotating savings group (ROSCA). `joinedAtRound` may exceed `memberCount` by one, which records
+ * a group that finished entirely before the user started tracking.
+ */
+const roscaGroupBase = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+  contributionAmount: z
+    .number({ error: 'Contribution must be a number' })
+    .positive('Contribution must be positive')
+    .max(1_000_000_000, 'Amount is too large'),
+  memberCount: z
+    .number({ error: 'Member count must be a number' })
+    .int('Member count must be a whole number')
+    .min(2, 'A group needs at least 2 members')
+    .max(60, 'That is too many members'),
+  fundType: z.enum(['stability', 'growth', 'life', 'charity']),
+  startDate: z.string().min(1, 'Start date is required'),
+  payoutRound: z
+    .number()
+    .int('Round must be a whole number')
+    .min(1, 'Round must be at least 1')
+    .nullable(),
+  joinedAtRound: z
+    .number({ error: 'Round must be a number' })
+    .int('Round must be a whole number')
+    .min(1, 'Round must be at least 1'),
+  priorContributed: z.number().min(0, 'Cannot be negative').max(1_000_000_000, 'Amount is too large'),
+  priorReceived: z.number().min(0, 'Cannot be negative').max(1_000_000_000, 'Amount is too large'),
+  // Optional — see the note on addExpenseSchema.description.
+  note: z.string().max(500, 'Note is too long'),
+});
+
+const roscaGroupRefined = roscaGroupBase
+  .refine((d) => d.payoutRound === null || d.payoutRound <= d.memberCount, {
+    path: ['payoutRound'],
+    message: 'Your turn must be one of the rounds in this group',
+  })
+  // +1 allows recording a group that had already finished before tracking began.
+  .refine((d) => d.joinedAtRound <= d.memberCount + 1, {
+    path: ['joinedAtRound'],
+    message: 'That round is past the end of this group',
+  })
+  // Tracking from round 1 means nothing predates tracking, so an opening position is a
+  // contradiction — and a costly one: those amounts count towards the group's position while no
+  // round is marked historical, so the totals would never reconcile against anything. The UI keeps
+  // these in step, but the rule belongs here where it can't be bypassed by a form bug.
+  .refine((d) => d.joinedAtRound > 1 || (d.priorContributed === 0 && d.priorReceived === 0), {
+    path: ['priorContributed'],
+    message: 'A group tracked from round 1 cannot have money paid before tracking began',
+  });
+
+export const createRoscaGroupSchema = roscaGroupRefined;
+
+/**
+ * The group rules plus the note-base rule, for currencies where the smallest banknote is larger than
+ * one unit. A contribution that isn't a whole number of notes can't be handed over, and the payout
+ * is a whole multiple exactly when the contribution is — so validating the one covers both.
+ *
+ * Mirrors `addIncomeSchemaFor`. `step` comes from the stored profile on the server, never the
+ * request. Applied at creation only; turning the setting off later leaves existing groups alone.
+ */
+export function createRoscaGroupSchemaFor(step: number) {
+  if (step <= 1) return createRoscaGroupSchema;
+  return createRoscaGroupSchema.refine((d) => d.contributionAmount % step === 0, {
+    path: ['contributionAmount'],
+    message: `Contribution must be a multiple of ${step} while whole-note splitting is on`,
+  });
+}
+
 export const updateUserSettingsSchema = z.object({
   displayName: z.string().min(1, 'Name is required').max(100).optional(),
   selectedCurrency: z.string().min(1).max(10).optional(),
   selectedLanguage: z.enum(['en', 'ar']).optional(),
   roundToNoteBase: z.boolean().optional(),
+  roscaEnabled: z.boolean().optional(),
 });
 
 export const updateFundCategoriesSchema = z.object({
@@ -155,6 +225,7 @@ export type AddExpenseInput = z.infer<typeof addExpenseSchema>;
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;
 export type CreateTransferInput = z.infer<typeof createTransferSchema>;
 export type AddDonationInput = z.infer<typeof addDonationSchema>;
+export type CreateRoscaGroupInput = z.infer<typeof createRoscaGroupSchema>;
 export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;
 export type RenameFundCategoryInput = z.infer<typeof renameFundCategorySchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;

@@ -59,6 +59,18 @@ export function useFunds(userId: string | null) {
   const totalTransferredIn = funds
     ? Object.values(funds).reduce((s, f) => s + (f.transferredIn ?? 0), 0)
     : 0;
+  // ROSCA payouts land in a fund's `totalReceived` like any other receipt, but they are not new
+  // income — the money is the user's own contributions coming back round. Summed here so the
+  // dashboard can subtract them, exactly as it does for transfers.
+  const totalRoscaIn = funds
+    ? Object.values(funds).reduce((s, f) => s + (f.roscaIn ?? 0), 0)
+    : 0;
+  const totalRoscaOut = funds
+    ? Object.values(funds).reduce((s, f) => s + (f.roscaOut ?? 0), 0)
+    : 0;
 
-  return { funds, loading, totalBalance, totalReceived, totalSpent, totalTransferredIn };
+  return {
+    funds, loading, totalBalance, totalReceived, totalSpent,
+    totalTransferredIn, totalRoscaIn, totalRoscaOut,
+  };
 }

@@ -10,6 +10,7 @@ import { DateRangePicker, DateRange, presetRange } from '@/components/reports/Da
 import { InsightsPanel } from '@/components/reports/InsightsPanel';
 import { FundHealthCard } from '@/components/reports/FundHealthCard';
 import { CategoryBreakdownCard } from '@/components/reports/CategoryBreakdownCard';
+import { RoscaReportCard } from '@/components/reports/RoscaReportCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -131,6 +132,15 @@ export default function ReportsPage() {
           </div>
 
           <InsightsPanel insights={report.insights} />
+
+          {/* Only when there was activity — a user with the feature off never has any. */}
+          {(report.totalRoscaContributed > 0 || report.totalRoscaReceived > 0) && (
+            <RoscaReportCard
+              contributed={report.totalRoscaContributed}
+              received={report.totalRoscaReceived}
+              net={report.roscaNet}
+            />
+          )}
 
           <div className="grid gap-6 lg:grid-cols-2">
             <FundHealthCard fundHealth={report.fundHealth} />

@@ -20,13 +20,19 @@ interface FundPageTemplateProps {
   children?: React.ReactNode;
 }
 
+/** Counter tiles. The ROSCA one is appended only when the user runs savings groups. */
+const BASE_TILES = ['balance', 'totalReceived', 'totalSpent', 'transferredOut'] as const;
+type TileKey = (typeof BASE_TILES)[number] | 'roscaOut';
+
 export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) {
   const { user } = useAuth();
   const { funds } = useFunds(user?.uid ?? null);
   const { expenses, loading, hasMore, loadingMore, loadMore } = useExpenses(user?.uid ?? null, fundType);
-  const { currency } = useUserSettings();
+  const { currency, roscaEnabled } = useUserSettings();
   const t = useTranslations('funds');
   const tf = useTranslations('nav');
+
+  const tiles: TileKey[] = roscaEnabled ? [...BASE_TILES, 'roscaOut'] : [...BASE_TILES];
 
   const config = FUND_CONFIG[fundType];
   const Icon = config.icon;
@@ -46,19 +52,21 @@ export function FundPageTemplate({ fundType, children }: FundPageTemplateProps) 
 
       {/* Transferred is its own figure, never folded into Spent: money moved to another fund has
           not left your accounts, and showing it as spending overstates what the fund consumed. */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {(['balance', 'totalReceived', 'totalSpent', 'transferredOut'] as const).map((key) => {
-          const labels = {
+      <div className={cn('grid grid-cols-2 gap-4', roscaEnabled ? 'lg:grid-cols-5' : 'lg:grid-cols-4')}>
+        {tiles.map((key) => {
+          const labels: Record<TileKey, string> = {
             balance: t('balance'),
             totalReceived: t('totalReceived'),
             totalSpent: t('totalSpent'),
             transferredOut: t('totalTransferred'),
+            roscaOut: t('totalRosca'),
           };
-          const colors = {
+          const colors: Record<TileKey, string> = {
             balance: config.color,
             totalReceived: 'text-emerald-400',
             totalSpent: 'text-rose-400',
             transferredOut: 'text-sky-400',
+            roscaOut: 'text-indigo-400',
           };
           return (
             <Card key={key}>

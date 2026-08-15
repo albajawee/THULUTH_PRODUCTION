@@ -6,7 +6,7 @@ import { adminDb } from '../firebase/admin';
 import { requireUser } from '../auth/session';
 import { calcGoalProgress } from '../utils/calculations';
 import { DISTRIBUTION } from '../constants/fund-percentages';
-import { Income, Expense, Donation, Transfer, Goal, Fund, FundType } from '../types';
+import { Income, Expense, Donation, Transfer, Goal, Fund, FundType, RoscaEntry } from '../types';
 import {
   startOfMonth, endOfMonth, startOfYear, endOfYear,
   differenceInCalendarDays, subDays, format,
@@ -144,6 +144,15 @@ export interface FundHealth {
   net: number;           // received - spent
   utilization: number;   // spent / received, as a percentage (0 if nothing received)
   overspent: boolean;    // spent more than the fund took in this period
+  /**
+   * ROSCA flow through this fund in the period, reported alongside `received`/`spent` but
+   * deliberately NOT folded into them. A transfer's counterpart is another fund in the same report,
+   * so it nets out; a savings group's counterpart is outside the app and only nets out across a
+   * whole cycle, which no report window contains. Folding a payout into `received` would make the
+   * fund look effortlessly well-managed in the one month the pot came round.
+   */
+  roscaOut: number;
+  roscaIn: number;
 }
 
 export interface CategoryStat {
@@ -167,6 +176,14 @@ export interface RangeReport {
   totalExpenses: number;
   totalDonations: number;
   totalTransferred: number;
+  /**
+   * ROSCA totals for the period. Reported separately and excluded from `netSavings` on purpose: a
+   * rotating savings group is net zero over its cycle, so charging contributions against savings
+   * would show nine months of loss and one month of windfall for money that was never lost or won.
+   */
+  totalRoscaContributed: number;
+  totalRoscaReceived: number;
+  roscaNet: number;      // received - contributed, within this period only
   netSavings: number;
   savingsRate: number;   // netSavings / income, as a percentage
   fundHealth: FundHealth[];
@@ -223,6 +240,15 @@ export async function getRangeReport(rawData: unknown): Promise<
       return day >= from && day <= to;
     });
 
+  // Current period only, and deliberately outside `periodTotals` — that also serves `prev`, whose
+  // three fields must keep their exact meaning for the delta chips on the reports page.
+  //
+  // Only `rosca_entries` is read. A group's opening position (`priorContributed`/`priorReceived`)
+  // lives on the group doc and describes money moved before tracking began, outside every possible
+  // report window; pulling it in to "make the totals match the detail page" would inject
+  // pre-tracking cash into a dated period.
+  const roscaEntries = await getCollectionInRange<RoscaEntry>(userId, 'rosca_entries', from, to);
+
   const [cur, prev] = await Promise.all([
     periodTotals(userId, from, to),
     periodTotals(userId, prevFrom, prevTo),
@@ -236,6 +262,13 @@ export async function getRangeReport(rawData: unknown): Promise<
   // --- Fund health ------------------------------------------------------
   const received: Record<FundType, number> = { stability: 0, growth: 0, life: 0, charity: 0 };
   const spent: Record<FundType, number> = { stability: 0, growth: 0, life: 0, charity: 0 };
+  // Kept out of `received`/`spent` above — see the note on FundHealth.
+  const roscaOut: Record<FundType, number> = { stability: 0, growth: 0, life: 0, charity: 0 };
+  const roscaIn: Record<FundType, number> = { stability: 0, growth: 0, life: 0, charity: 0 };
+  for (const e of roscaEntries) {
+    if (e.type === 'contribution') roscaOut[e.fundType] += e.amount;
+    else roscaIn[e.fundType] += e.amount;
+  }
 
   for (const inc of incomes) {
     for (const f of FUNDS) received[f] += inc.distributions?.[f] ?? 0;
@@ -257,8 +290,13 @@ export async function getRangeReport(rawData: unknown): Promise<
       net: rec - sp,
       utilization: rec > 0 ? (sp / rec) * 100 : 0,
       overspent: sp > rec,
+      roscaOut: roscaOut[fund],
+      roscaIn: roscaIn[fund],
     };
   });
+
+  const totalRoscaContributed = FUNDS.reduce((s, f) => s + roscaOut[f], 0);
+  const totalRoscaReceived = FUNDS.reduce((s, f) => s + roscaIn[f], 0);
 
   // --- Category deep-dive ----------------------------------------------
   const catMap = new Map<string, CategoryStat>();
@@ -299,6 +337,8 @@ export async function getRangeReport(rawData: unknown): Promise<
     report: {
       from, to, days,
       totalIncome, totalExpenses, totalDonations, totalTransferred,
+      totalRoscaContributed, totalRoscaReceived,
+      roscaNet: totalRoscaReceived - totalRoscaContributed,
       netSavings, savingsRate,
       fundHealth, categories, topExpenses, insights,
       previous: {

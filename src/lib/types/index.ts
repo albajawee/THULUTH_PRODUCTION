@@ -6,5 +6,6 @@ export * from './transaction.types';
 export * from './transfer.types';
 export * from './donation.types';
 export * from './audit.types';
+export * from './rosca.types';
 export * from './user.types';
 export * from './aggregate.types';
